@@ -6,12 +6,11 @@ var myArgs = process.argv.slice(2)
 //var coolerName = "WBA-16092-000-C012"
 var coolerName = myArgs[0]
 
-Date.MIN_VALUE = new Date(-8640000000000000);
-const screenNameFilePath = 'screenNameFile';    // TODO: this has to be a path on hosting machine
-const storageLocalDir = './yo/';                   // TODO: We have to come up with a dir for all containers to feed of
-const coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
-const tmpCDFile = `../CoolerData.js`;
 
+const coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
+
+
+const tmpCDFile = `../CoolerData.js`;
 let file = `${tmpCDFile}`
 let fileArray = [file]
 let result
@@ -94,23 +93,75 @@ const buildList = function(imageArray) {
 
 
 const axios = require('axios').default;
+const adPlatformConfig = require('./coolerCacheConfig');
+Date.MIN_VALUE = new Date(-8640000000000000);
+const screenNameFilePath = 'screenNameFile';    // TODO: this has to be a path on hosting machine
+const storageLocalCoolerImagesDir = './yo/';    // TODO: We have to come up with a dir for all containers to feed of
+const storageLocalAdPlatformDataDir = './adPlatform/'
+const adPlatformDataFilename = 'adPlatformData.json';
+
+
+const getAdPlatformData = async function() {
+    const adPlatformDataLastModified = getFileLastModifiedTime(
+        path.join(storageLocalAdPlatformDataDir, adPlatformDataFilename));
+    const getHeaders = {
+        'If-Modified-Since': adPlatformDataLastModified
+    };
+    let adPlatformUrl = await buildAdPlatformGetUrl();
+
+    try {
+        const adPlatformDataResponse = await axios.get(adPlatformUrl, {
+            headers: getHeaders,
+        });
+        const adPlatformData = adPlatformDataResponse.data;
+        
+        if (!Array.isArray(adPlatformData || !adPlatformData.length)) {
+            // TODO: better handling
+            adPlatformData = await readAdPlatformDataFromDisk();
+          }
+    } catch (error) {
+        const abc = error;
+    }
+
+}
+
+const buildAdPlatformGetUrl = async function() {
+    _screenName = _screenName || await readScreenNameFromHost();
+
+    return `${adPlatformConfig.adPlatformBaseUrlDev}${_screenName}?code=${adPlatformConfig.adPlatformFunctionCodeDev}`;
+}
+
+const readAdPlatformDataFromDisk = async function(){
+    let fileFullPath = path.join(storageLocalAdPlatformDataDir, adPlatformDataFilename);
+    fs.readFile(fileFullPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error(`Could not read file from ${fileFullPath}. Details:${err}`);
+            return;
+        }
+
+        return JSON.parse(data);
+    });
+}
+
+
+
 const getCoolerData = async function() {
     const coolerDataUrl = await getCoolerDataUrl();
     let coolerData = await axios.get(coolerDataUrl);
     // Just in case the dir is not there yet - create it so we won't face problems saving downloaded files.
-    fs.mkdir(storageLocalDir, (err) =>{
-        console.error(`Error creating dir for saving files under ${storageLocalDir}`)
+    fs.mkdir(storageLocalCoolerImagesDir, (err) =>{
+        console.error(`Error creating dir for saving files under ${storageLocalCoolerImagesDir}`)
     });
-const acb = getShelvesComponentFilenames(coolerData);
-    await handleAllProductImages(coolerData);
     
-    console.log(JSON.stringify(data));
+    await handleImagesDownload(coolerData);
+    
+    console.log('done');
 }
 
-const getFileLastModifiedTime = function(filename) {
+const getFileLastModifiedTime = function(fileFullPath) {
     let stats = undefined;
     try {
-        stats = fs.statSync(path.join(storageLocalDir, filename));
+        stats = fs.statSync(fileFullPath);
     } catch (error) {
         return Date.MIN_VALUE;
     }
@@ -143,11 +194,12 @@ const readScreenNameFromHost = async function() {
 })()*/
 
 //console.log( getFileLastModifiedTime('apiService.js'));
-getCoolerData().then((data) =>{console.log('final result: ' + data)});
+getAdPlatformData().then((data) =>{console.log('final result: ' + data)});
 
-async function handleAllProductImages(coolerData) {
-    for await (const productImageFilename of coolerData.data.allProductImages) {
-        const fileLastModifiedTime = getFileLastModifiedTime(productImageFilename);
+async function handleImagesDownload(coolerData) {
+    const allImages = getAllFilenames(coolerData);
+    for (const productImageFilename of allImages) {
+        const fileLastModifiedTime = getFileLastModifiedTime(path.join(storageLocalCoolerImagesDir, productImageFilename));
         const fileUrl = `${imagePath}${productImageFilename}`;
         const getHeaders = {
             'If-Modified-Since': fileLastModifiedTime //new Date(Date.now()).toUTCString()
@@ -158,19 +210,25 @@ async function handleAllProductImages(coolerData) {
                 headers: getHeaders,
                 responseType: 'stream'
             });
+            console.log(`Downloaded an image from: [${fileUrl}], will save it to: [${storageLocalCoolerImagesDir}]`);
             // Save the file:
-            const writeSteam = response.data.pipe(fs.createWriteStream(path.join(storageLocalDir, productImageFilename)));
+            const writeSteam = response.data.pipe(fs.createWriteStream(path.join(storageLocalCoolerImagesDir, productImageFilename)));
             writeSteam.on('error', function (err) {
-                console.log(`Error saving image ${productImageFilename} under ${storageLocalDir}.`
+                console.log(`Error saving image ${productImageFilename} under ${storageLocalCoolerImagesDir}.`
                     + ` Details: ${err}`);
             });
         }
         catch (error) {
-            if (error && error.response && error.response.status === 304) {
-                console.log(`File at ${fileUrl} was not modified since last time, skipping.`);
+            if (error && error.response) {  // HTTP error
+                if (error.response.status === 304) {
+                    // Not an error:
+                    console.log(`File at ${fileUrl} was not modified since last time, skipping.`);
+                } else if (error.response.status === 404) {
+                    console.error(`File not found: ${fileUrl}`);
+                }
             }
             else {
-                console.log(`Error getting and saving file from URL ${fileUrl}: ${err}`);
+                console.error(`Error getting and saving file from URL ${fileUrl}: ${err}`);
             }
         }
     }
@@ -195,40 +253,9 @@ function getShelvesComponentFilenames(coolerData) {
     return coolerData.data.metadata.shelves.map(shelf => {
         if (!shelf.slots) return undefined;
         return shelf.slots.map(slot => slot.imageName);
-    })
-        .filter(arr => arr !== undefined)
+    }).filter(arr => arr !== undefined)
         .reduce((arr1, arr2) => arr1.concat(arr2), []);
 }
 
-async function handleShelvesImages(coolerData) {
-    for await (const productImageFilename of coolerData.data.allProductImages) {
-        const fileLastModifiedTime = getFileLastModifiedTime(productImageFilename);
-        const fileUrl = `${imagePath}${productImageFilename}`;
-        const getHeaders = {
-            'If-Modified-Since': fileLastModifiedTime //new Date(Date.now()).toUTCString()
-        };
-        try {
-            // Download the file:
-            const response = await axios.get(fileUrl, {
-                headers: getHeaders,
-                responseType: 'stream'
-            });
-            // Save the file:
-            const writeSteam = response.data.pipe(fs.createWriteStream(path.join(storageLocalDir, productImageFilename)));
-            writeSteam.on('error', function (err) {
-                console.log(`Error saving image ${productImageFilename} under ${storageLocalDir}.`
-                    + ` Details: ${err}`);
-            });
-        }
-        catch (error) {
-            if (error && error.response && error.response.status === 304) {
-                console.log(`File at ${fileUrl} was not modified since last time, skipping.`);
-            }
-            else {
-                console.log(`Error getting and saving file from URL ${fileUrl}: ${err}`);
-            }
-        }
-    }
-}
 //workData()
 //setTimeout(() => buildList(imageArray), 500)

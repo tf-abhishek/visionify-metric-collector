@@ -1,0 +1,325 @@
+[
+    {
+      "CampaignId": 69,
+      "CampaignVersionId": 90,
+      "Name": "Red Bull_Beverages_20191205_20191231_Full Door Ad_Walgreens",
+      "AdType": "FullDoorAd",
+      "AdOption": "Standard",
+      "StartDate": "2019-12-05T00:00:00Z",
+      "StopDate": "2019-12-31T00:00:00Z",
+      "DaysOfWeek": "All",
+      "RotationType": "Rotation",
+      "Rotation": 30.00,
+      "IsGlobal": false,
+      "TimeOffset": null,
+      "AmountOfFacing": null,
+      "TimeIntervals": [
+        {
+          "Start": 0,
+          "Finish": 86400000
+        }
+      ],
+      "Rules": [
+        {
+          "Operator": "None",
+          "Comparison": "Equals",
+          "Order": 0,
+          "Category": null,
+          "Brand": "Red Bull",
+          "Sku": null,
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        },
+        {
+          "Operator": "Or",
+          "Comparison": "Equals",
+          "Order": 1,
+          "Category": null,
+          "Brand": null,
+          "Sku": "61126984123",
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        }
+      ],
+      "Assets": [
+        {
+          "AssetId": 85,
+          "StartDate": "2019-12-05T00:00:00Z",
+          "ExpirationDate": "2020-12-05T00:00:00Z",
+          "RotationType": "Rotation",
+          "Rotation": 30.00,
+          "IsGlobalTime": false,
+          "DaysOfWeek": "All",
+          "TimeOffset": null,
+          "FileName": "20191205_Cooler Screens_Red Bull_Red Bull Winter Edition_Full Door Ad.mp4",
+          "SasLink": "https://qacsiadplatform.blob.core.windows.net/assets/201912%5C4f17e0d2-1129-4d5f-abd0-a97746e1bf35?sv=2019-02-02&sr=b&sig=Vtnkiw%2FCHKDw9qmSKTR%2FFNpbv41SZc1hqp0anjoYS%2Fs%3D&se=2019-12-11T01%3A04%3A40Z&sp=r&rscd=attachment%3B%20filename%3D%2220191205_Cooler%20Screens_Red%20Bull_Red%20Bull%20Winter%20Edition_Full%20Door%20Ad.mp4%22",
+          "LinkedAssetId": null,
+          "AmountOfFacing": null,
+          "TimeIntervals": [
+            {
+              "Start": 0,
+              "Finish": 86400000
+            }
+          ],
+          "DateIntervals": [],
+          "Rules": []
+        }
+      ]
+    },
+    {
+      "CampaignId": 70,
+      "CampaignVersionId": 91,
+      "Name": "Red Bull_Beverages_20191205_20191231_Middle Banner_Walgreens",
+      "AdType": "MiddleBanner",
+      "AdOption": "Standard",
+      "StartDate": "2019-12-05T00:00:00Z",
+      "StopDate": "2019-12-31T00:00:00Z",
+      "DaysOfWeek": "All",
+      "RotationType": "Rotation",
+      "Rotation": 30.00,
+      "IsGlobal": false,
+      "TimeOffset": null,
+      "AmountOfFacing": null,
+      "TimeIntervals": [
+        {
+          "Start": 0,
+          "Finish": 86400000
+        }
+      ],
+      "Rules": [
+        {
+          "Operator": "None",
+          "Comparison": "Equals",
+          "Order": 0,
+          "Category": null,
+          "Brand": "Red Bull",
+          "Sku": null,
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        },
+        {
+          "Operator": "Or",
+          "Comparison": "Equals",
+          "Order": 1,
+          "Category": null,
+          "Brand": null,
+          "Sku": "61126984123",
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        }
+      ],
+      "Assets": [
+        {
+          "AssetId": 84,
+          "StartDate": "2019-12-05T00:00:00Z",
+          "ExpirationDate": "2020-12-05T00:00:00Z",
+          "RotationType": "Rotation",
+          "Rotation": 30.00,
+          "IsGlobalTime": false,
+          "DaysOfWeek": "All",
+          "TimeOffset": null,
+          "FileName": "20191205_Cooler Screens_Red Bull_Red Bull Winter Edition_Middle Banner.mp4",
+          "SasLink": "https://qacsiadplatform.blob.core.windows.net/assets/201912%5Cd4f9c77a-b555-4b37-a2b1-fdc707edba66?sv=2019-02-02&sr=b&sig=5yzD4TIo9eLyRKWjx7GR58RO4FCJMhwwtDudNVa9zrg%3D&se=2019-12-11T01%3A04%3A40Z&sp=r&rscd=attachment%3B%20filename%3D%2220191205_Cooler%20Screens_Red%20Bull_Red%20Bull%20Winter%20Edition_Middle%20Banner.mp4%22",
+          "LinkedAssetId": null,
+          "AmountOfFacing": null,
+          "TimeIntervals": [
+            {
+              "Start": 0,
+              "Finish": 86400000
+            }
+          ],
+          "DateIntervals": [],
+          "Rules": []
+        }
+      ]
+    },
+    {
+      "CampaignId": 71,
+      "CampaignVersionId": 92,
+      "Name": "Red Bull_Beverages_20191205_20191231_Top Banner_Walgreens",
+      "AdType": "TopBanner",
+      "AdOption": "Standard",
+      "StartDate": "2019-12-05T00:00:00Z",
+      "StopDate": "2019-12-31T00:00:00Z",
+      "DaysOfWeek": "All",
+      "RotationType": "Rotation",
+      "Rotation": 30.00,
+      "IsGlobal": false,
+      "TimeOffset": null,
+      "AmountOfFacing": null,
+      "TimeIntervals": [
+        {
+          "Start": 0,
+          "Finish": 86400000
+        }
+      ],
+      "Rules": [
+        {
+          "Operator": "None",
+          "Comparison": "Equals",
+          "Order": 0,
+          "Category": null,
+          "Brand": "Red Bull",
+          "Sku": null,
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        },
+        {
+          "Operator": "Or",
+          "Comparison": "Equals",
+          "Order": 1,
+          "Category": null,
+          "Brand": null,
+          "Sku": "61126984123",
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        }
+      ],
+      "Assets": [
+        {
+          "AssetId": 83,
+          "StartDate": "2019-12-05T00:00:00Z",
+          "ExpirationDate": "2020-12-05T00:00:00Z",
+          "RotationType": "Rotation",
+          "Rotation": 30.00,
+          "IsGlobalTime": false,
+          "DaysOfWeek": "All",
+          "TimeOffset": null,
+          "FileName": "20191205_Cooler Screens_Red Bull_Red Bull Winter Edition_Top Banner.mp4",
+          "SasLink": "https://qacsiadplatform.blob.core.windows.net/assets/201912%5C89678388-ad7f-4ca7-bc54-b6b396f1401c?sv=2019-02-02&sr=b&sig=X3K0f30fTQXajKLMiSRsgIniNfoUWAWavrCdu7Vytd8%3D&se=2019-12-11T01%3A04%3A40Z&sp=r&rscd=attachment%3B%20filename%3D%2220191205_Cooler%20Screens_Red%20Bull_Red%20Bull%20Winter%20Edition_Top%20Banner.mp4%22",
+          "LinkedAssetId": null,
+          "AmountOfFacing": null,
+          "TimeIntervals": [
+            {
+              "Start": 0,
+              "Finish": 86400000
+            }
+          ],
+          "DateIntervals": [],
+          "Rules": []
+        }
+      ]
+    },
+    {
+      "CampaignId": 72,
+      "CampaignVersionId": 93,
+      "Name": "Red Bull_Beverages_20191205_20191231_Native Ad_Walgreens",
+      "AdType": "NativeAd",
+      "AdOption": "Standard",
+      "StartDate": "2019-12-05T00:00:00Z",
+      "StopDate": "2019-12-31T00:00:00Z",
+      "DaysOfWeek": "All",
+      "RotationType": "Rotation",
+      "Rotation": null,
+      "IsGlobal": false,
+      "TimeOffset": null,
+      "AmountOfFacing": null,
+      "TimeIntervals": [
+        {
+          "Start": 0,
+          "Finish": 86400000
+        }
+      ],
+      "Rules": [
+        {
+          "Operator": "None",
+          "Comparison": "Equals",
+          "Order": 0,
+          "Category": null,
+          "Brand": null,
+          "Sku": "61126971646",
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        }
+      ],
+      "Assets": [
+        {
+          "AssetId": 81,
+          "StartDate": "2019-12-05T00:00:00Z",
+          "ExpirationDate": "2020-12-05T00:00:00Z",
+          "RotationType": "Rotation",
+          "Rotation": null,
+          "IsGlobalTime": false,
+          "DaysOfWeek": "All",
+          "TimeOffset": null,
+          "FileName": "20191205_Cooler Screens_Red Bull_Red Bull SF 61126971646_Native Ad.png",
+          "SasLink": "https://qacsiadplatform.blob.core.windows.net/assets/201912%5Cc8934e4f-e757-463a-800c-15cec3fb1f3d?sv=2019-02-02&sr=b&sig=o93BToOiOryoarpYSNA3XdFzmdyh0Ey%2Fs1khMFo4tR0%3D&se=2019-12-11T01%3A04%3A40Z&sp=r&rscd=attachment%3B%20filename%3D%2220191205_Cooler%20Screens_Red%20Bull_Red%20Bull%20SF%2061126971646_Native%20Ad.png%22",
+          "LinkedAssetId": null,
+          "AmountOfFacing": null,
+          "TimeIntervals": [
+            {
+              "Start": 0,
+              "Finish": 86400000
+            }
+          ],
+          "DateIntervals": [],
+          "Rules": []
+        }
+      ]
+    },
+    {
+      "CampaignId": 74,
+      "CampaignVersionId": 95,
+      "Name": "Red Bull_Beverages_20191205_20200131_Tag_Walgreens",
+      "AdType": "Tag",
+      "AdOption": "Standard",
+      "StartDate": "2019-12-05T00:00:00Z",
+      "StopDate": "2020-01-31T00:00:00Z",
+      "DaysOfWeek": "All",
+      "RotationType": "Rotation",
+      "Rotation": null,
+      "IsGlobal": false,
+      "TimeOffset": null,
+      "AmountOfFacing": null,
+      "TimeIntervals": [
+        {
+          "Start": 0,
+          "Finish": 86400000
+        }
+      ],
+      "Rules": [
+        {
+          "Operator": "None",
+          "Comparison": "Equals",
+          "Order": 0,
+          "Category": null,
+          "Brand": null,
+          "Sku": "61126984123",
+          "ProductImage": null,
+          "IsGroup": false,
+          "Rules": []
+        }
+      ],
+      "Assets": [
+        {
+          "AssetId": 82,
+          "StartDate": "2019-12-05T00:00:00Z",
+          "ExpirationDate": "2020-12-05T00:00:00Z",
+          "RotationType": "Rotation",
+          "Rotation": 0.00,
+          "IsGlobalTime": false,
+          "DaysOfWeek": "All",
+          "TimeOffset": null,
+          "FileName": "20191205_Cooler Screens_Red Bull_Red Bull Winter Edition_Tag.png",
+          "SasLink": "https://qacsiadplatform.blob.core.windows.net/assets/201912%5C0d810d4a-d4e1-4cb7-bb89-13709bf18d17?sv=2019-02-02&sr=b&sig=LQDglAPdXdWvy2JJ8hCHs8VRxa2e%2FS9%2Fl3rruZrKEJY%3D&se=2019-12-11T01%3A04%3A40Z&sp=r&rscd=attachment%3B%20filename%3D%2220191205_Cooler%20Screens_Red%20Bull_Red%20Bull%20Winter%20Edition_Tag.png%22",
+          "LinkedAssetId": null,
+          "AmountOfFacing": null,
+          "TimeIntervals": [
+            {
+              "Start": 0,
+              "Finish": 86400000
+            }
+          ],
+          "DateIntervals": [],
+          "Rules": []
+        }
+      ]
+    }
+  ]
