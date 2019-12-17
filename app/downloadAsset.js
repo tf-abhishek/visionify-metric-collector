@@ -31,7 +31,7 @@ Client.fromEnvironment(Transport, function (err, client) {
                 getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
                 // Send trigger bridge some stuff:
                 setInterval(() => {
-                    sendDataToTriggerBridge();
+                    sendDataToTriggerBridge(client);
                 console.log('Sent some data to Josh');
                 }, 20 * 1000);
             }
@@ -65,7 +65,7 @@ function pipeMessage(client, inputName, msg) {
     }
 }*/
 
-function sendDataToTriggerBridge() {
+function sendDataToTriggerBridge(client) {
     adPlatformService.getAdPlatformData().then(
         (data) => {
             client.sendOutputEvent(

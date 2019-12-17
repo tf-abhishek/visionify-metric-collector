@@ -5,6 +5,7 @@ const fs = require('fs');
 const config = require('./coolerCacheConfig');
 
 const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
+const _storageLocalCoolerRootDir = config.coolerCacheRootFolder;
 const _storageLocalCoolerImagesDir = path.join(config.coolerCacheRootFolder, 'products');
 const _imagePath = `https://coolerassets.blob.core.windows.net/planogram-images-haw/`
 
@@ -56,24 +57,37 @@ exports.getCoolerDataUrl = async function () {
 }
 
 exports.saveAndPrependCoolerData = function(coolerData) {
-    if (typeof window !== 'undefined') {
+    /*if (typeof window !== 'undefined') {
         window.coolerData = coolerData;
     } else {
         console.warn(`Window is not defined; Cannot create coolerData object on it`);
-    }
+    }*/
+    createDirForAssets();
 
-    fs.writeFile(path.join(config.coolerCacheRootFolderDebug, `coolerData.json`), JSON.stringify(coolerData), function (err) {
+    fs.writeFile(path.join(config.coolerCacheRootFolder, `coolerData.js`),
+     'window.coolerData=' + JSON.stringify(coolerData),
+     { flag: 'w+' },
+     function (err) {
         if (err) {
             return console.error(`Error saving coolerData: ${err}`);
         }
-        console.log(`coolerData file was saved under ${config.coolerCacheRootFolderDebug}`);
+        console.log(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
     });
 }
 
 function createDirForAssets() {
-    fs.mkdir(_storageLocalCoolerImagesDir, (err) => {
-        console.error(`Error creating dir for saving files under ${_storageLocalCoolerImagesDir}`)
-    });
+    /*fs.mkdir(_storageLocalCoolerRootDir, (err) => {
+        console.error(`Error creating root dir for coolerCache under: ${_storageLocalCoolerRootDir}.`
+            + ` Details: [${err}]`);
+    });*/
+    try {
+        fs.mkdirSync(_storageLocalCoolerImagesDir, { recursive: true });
+    } catch (error) {
+        console.error(`Error creating dir for saving files under ${_storageLocalCoolerImagesDir}: ${error}`)
+    }
+    /*fs.mkdir(_storageLocalCoolerImagesDir, { recursive: true }, (err) => {
+        console.error(`Error creating dir for saving files under ${_storageLocalCoolerImagesDir}: ${err}`)
+    });*/
 }
 
 function getAllFilenames(coolerData) {
