@@ -2,89 +2,82 @@ const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
 
-var myArgs = process.argv.slice(2)
 //var coolerName = "WBA-16092-000-C012"
-var coolerName = myArgs[0]
-
-
 const coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
-
-
-const tmpCDFile = `../CoolerData.js`;
-let file = `${tmpCDFile}`
-let fileArray = [file]
-let result
-let imageArray = [];
-const buildFolder  = 324634818 // set build here
-//const coolerName  = 'WBA-16092-000-C001' // set cooler name here
-//const coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
-let imageName
 const imagePath = `https://coolerassets.blob.core.windows.net/planogram-images-haw/`
-// const imagePath = `https://csiplanogramadcopy.blob.core.windows.net/324634818/tags/`
 
-//If-Modified-Since
-const configOpen = '<monitor_sync_config version="1">\n';
-const syncOptions = '<sync expiry="0" refresh_period="180000" timeout_period="30000">\n';
-const imageSyncOptions = '<sync expiry="0" refresh_period="64800000" timeout_period="30000">\n';
-const urlSyncMode = '<url sync_mode="1">\n';
-const urlClose = '</url>\n'
-const syncClose = "</sync>\n";
-const configClose = '</monitor_sync_config>'
-const coolerDataFromTemplate = `<from>${coolerPath}${coolerName}/bsversion</from>\n`
-const coolerDataToTemplate = `<to>/opt/broadsign/suite/bsp/share/documents/${buildFolder}/CoolerData.js</to>\n`
-// const coolerDataToTemplate = `<to>C:/ProgramData/BroadSign/bsp/share/bsp/documents/${buildFolder}/CoolerData.js</to>\n`
-const coolerDataConfigString = syncOptions + urlSyncMode + coolerDataFromTemplate + coolerDataToTemplate + urlClose + syncClose
-//let fullConfig = "configOpen + coolerDataConfigString"
-let fullConfig = ""
 
-const readFile = function(file, imageArray) {
-    let data = fs.readFile(`${file}`,'utf8',(err, data) => {
-        //console.log(`${data}!`);
-        if (err) throw err;
-        const regx = /([^,[\]:]+?png)/g
-        let found = data.match(regx);
-        found.forEach((index) => {
-            //console.log(`${index}!\n`);
-            const cutIndex =  index.indexOf('"')
-            //console.log(`${index}!\n`);
-            const sliced =  index.slice(cutIndex + 1)
-            //console.log(`${index}!\n`);
-            const matchResult = imageArray.filter((found) => (found === sliced))
-            if(!matchResult[0]) {
-                imageArray.push(sliced)
+// IOT HUB MESSANGE BROKER
+
+const Transport = require('azure-iot-device-mqtt').Mqtt;
+const Client = require('azure-iot-device').ModuleClient;
+const Message = require('azure-iot-device').Message;
+
+/*Client.fromEnvironment(Transport, function (err, client) {
+    if (err) {
+        throw err;
+    } else {
+
+        client.on('error', function (err) {
+            throw err;
+        });
+
+        // connect to the Edge instance
+        client.open(function (err) {
+            if (err) {
+                throw err;
             } else {
-                const matchIndex = imageArray.indexOf(matchResult[0])
-                imageArray[matchIndex] = sliced
-            } 
-        })
-        return found
-    })
-    //console.log('after read all Images in config: ', imageArray)
-}
+                console.log('IoT Hub module client initialized with Josh');
 
-const workData = (async () => {
-    const finish = await readFile(file, imageArray)
-})
+                // Send trigger bridge some stuff:
+                client.sendOutputEvent('playListData', new Message(
+                    JSON.stringify({ assets: [{ 'image': 'abc.jpg' }, { 'image': 'def.jpg' }] })),
+                    printResultFor('Sent TriggerBridge assets'));
+                console.log('Sent assets to Trigger Bridge');
 
-const buildList = function(imageArray) {
-    //console.log('all Images in config: ', imageArray)
-    imageArray.forEach((image) => {
-        imageName = image
-        const imgFromTemplate = `curl "${imagePath}${imageName}" -o "${imageName}" -C -\n`;
-        fullConfig += imgFromTemplate
-        
-    })
-    //fullConfig += configClose
-    fs.writeFile(`cache-Assets.sh`, fullConfig, function(err) {
-        if(err) {
-            return console.log(err);
+                setInterval(() => {
+                    client.sendOutputEvent('playListData', new Message(
+                        JSON.stringify({ assets: [{ 'image': 'abc.jpg' }, { 'image': 'def.jpg' }] })),
+                        printResultFor('Sent TriggerBridge assets'));
+                console.log('Sent assets to Trigger Bridge');
+                }, 20 * 1000);
+
+                // Act on input messages to the module.
+                /*client.on('inputMessage', function (inputName, msg) {
+                    console.log('i got the message');
+                    pipeMessage(client, inputName, msg);
+                });*//*
+            }
+        });
+    }
+});
+// This function just pipes the messages without any change.
+/*
+function pipeMessage(client, inputName, msg) {
+    client.complete(msg, printResultFor('Receiving message'));
+
+    if (inputName === 'input1') {
+        var message = msg.getBytes().toString('utf8');
+        if (message) {
+            var outputMsg = new Message(message);
+            console.log('This is the message', message);
+            client.sendOutputEvent('output1', outputMsg, printResultFor('Sending received message'));
         }
-        console.log(`cache-Assets.sh file was saved!`);
-    }); 
-    //console.log(fullConfig)
+    }
+}*/
+
+// Helper function to print results in the console
+function printResultFor(op) {
+    return function printResult(err, res) {
+        if (err) {
+            console.error(op + ' error: ' + err.toString());
+        }
+        if (res) {
+            console.log(op + ' status: ' + res.constructor.name);
+        }
+    };
 }
-
-
+// IOT HUB MESSANGE BROKER
 
 
 
@@ -101,7 +94,7 @@ const storageLocalAdPlatformDataDir = './adPlatform/'
 const adPlatformDataFilename = 'adPlatformData.json';
 
 
-const getAdPlatformData = async function() {
+const getAdPlatformData = async function () {
     const adPlatformDataLastModified = getFileLastModifiedTime(
         path.join(storageLocalAdPlatformDataDir, adPlatformDataFilename));
     const getHeaders = {
@@ -114,24 +107,24 @@ const getAdPlatformData = async function() {
             headers: getHeaders,
         });
         const adPlatformData = adPlatformDataResponse.data;
-        
+
         if (!Array.isArray(adPlatformData || !adPlatformData.length)) {
             // TODO: better handling
             adPlatformData = await readAdPlatformDataFromDisk();
-          }
+        }
     } catch (error) {
         const abc = error;
     }
 
 }
 
-const buildAdPlatformGetUrl = async function() {
+const buildAdPlatformGetUrl = async function () {
     _screenName = _screenName || await readScreenNameFromHost();
 
     return `${adPlatformConfig.adPlatformBaseUrlDev}${_screenName}?code=${adPlatformConfig.adPlatformFunctionCodeDev}`;
 }
 
-const readAdPlatformDataFromDisk = async function(){
+const readAdPlatformDataFromDisk = async function () {
     let fileFullPath = path.join(storageLocalAdPlatformDataDir, adPlatformDataFilename);
     fs.readFile(fileFullPath, 'utf8', (err, data) => {
         if (err) {
@@ -145,20 +138,20 @@ const readAdPlatformDataFromDisk = async function(){
 
 
 
-const getCoolerData = async function() {
+const getCoolerData = async function () {
     const coolerDataUrl = await getCoolerDataUrl();
     let coolerData = await axios.get(coolerDataUrl);
     // Just in case the dir is not there yet - create it so we won't face problems saving downloaded files.
-    fs.mkdir(storageLocalCoolerImagesDir, (err) =>{
+    fs.mkdir(storageLocalCoolerImagesDir, (err) => {
         console.error(`Error creating dir for saving files under ${storageLocalCoolerImagesDir}`)
     });
-    
+
     await handleImagesDownload(coolerData);
-    
+
     console.log('done');
 }
 
-const getFileLastModifiedTime = function(fileFullPath) {
+const getFileLastModifiedTime = function (fileFullPath) {
     let stats = undefined;
     try {
         stats = fs.statSync(fileFullPath);
@@ -170,13 +163,13 @@ const getFileLastModifiedTime = function(fileFullPath) {
 }
 
 let _screenName = undefined;
-const getCoolerDataUrl = async function() {
+const getCoolerDataUrl = async function () {
     _screenName = _screenName || await readScreenNameFromHost();
 
     return `${coolerPath}${_screenName}`;
 }
 
-const readScreenNameFromHost = async function() {
+const readScreenNameFromHost = async function () {
     let screenName = '';
     const readStream = fs.createReadStream(screenNameFilePath);
     readLineIntefrace = readline.createInterface(readStream);
@@ -184,7 +177,7 @@ const readScreenNameFromHost = async function() {
     for await (const line of readLineIntefrace) {
         screenName = line;
     }
-    
+
     return screenName;
 }
 
@@ -194,7 +187,6 @@ const readScreenNameFromHost = async function() {
 })()*/
 
 //console.log( getFileLastModifiedTime('apiService.js'));
-getAdPlatformData().then((data) =>{console.log('final result: ' + data)});
 
 async function handleImagesDownload(coolerData) {
     const allImages = getAllFilenames(coolerData);
@@ -257,5 +249,7 @@ function getShelvesComponentFilenames(coolerData) {
         .reduce((arr1, arr2) => arr1.concat(arr2), []);
 }
 
-//workData()
-//setTimeout(() => buildList(imageArray), 500)
+
+
+
+//getAdPlatformData().then((data) => { console.log('final result: ' + data) });*/

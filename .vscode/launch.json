@@ -11,7 +11,7 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/downloadAsset.js"
+            "program": "${workspaceFolder}/app/downloadAsset.js"
         }
     ]
 }
