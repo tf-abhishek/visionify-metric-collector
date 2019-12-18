@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
+const utils = require('./services/utils');
 
 //var coolerName = "WBA-16092-000-C012"
 
@@ -33,7 +34,7 @@ Client.fromEnvironment(Transport, function (err, client) {
                 setInterval(() => {
                     sendDataToTriggerBridge(client);
                 console.log('Sent some data to Josh');
-                }, 20 * 1000);
+                }, 60 * 1000);
             }
         });
     }
@@ -100,7 +101,10 @@ function printResultFor(op) {
 
 const axios = require('axios').default;
 Date.MIN_VALUE = new Date(-8640000000000000);
-
+Array.prototype.extend = function (other_array) {
+    if (!utils.isArray(other_array)) return;
+    other_array.forEach(function(v) { this.push(v)}, this) ;
+}
 
 const coolerDataService = require('./services/coolerDataService');
 
@@ -109,7 +113,7 @@ const getCoolerData = async function () {
     let coolerData = await axios.get(coolerDataUrl);
     coolerDataService.saveAndPrependCoolerData(coolerData.data);
 
-    await coolerDataService.handleImagesDownload(coolerData);
+    await coolerDataService.downloadAndSaveAssets(coolerData.data);
 
     console.log('done');
 }

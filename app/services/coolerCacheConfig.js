@@ -6,10 +6,13 @@ config.adPlatformFunctionCodeQA = 'grGoLFag/dyqMfKyQWSLG7cDHwOpb6QyuguYdgTHfF/ti
 config.adPlatformBaseUrlDev = 'https://dev-csi-ad-func.azurewebsites.net/api/external/screenData/';
 config.adPlatformBaseUrlQA = 'https://qa-csi-ad-func.azurewebsites.net/api/external/screenData/';
 
+//config.coolerCacheRootFolder = './app/yo';
 config.coolerCacheRootFolder = '/home/csiadmin/coolerCache';
 config.coolerCacheRootFolderDebug = './app/yo/';
 
-config.storageLocalAdPlatformDataDir = config.coolerCacheRootFolder + '/adPlatform/';
+config.screenNEIDPath = './app/screenNameFile';    // TODO: this has to be a path on hosting machine
+
+config.storageLocalAdPlatformDataDir = config.coolerCacheRootFolder;// + '/adPlatform/';
 config.storageLocalAdPlatformDataDirDebug = './adPlatform/';
 
 module.exports = config;

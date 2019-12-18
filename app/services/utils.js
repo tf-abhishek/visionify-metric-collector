@@ -1,7 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
+const config = require('./coolerCacheConfig');
 
-const screenNameFilePath = './app/screenNameFile';    // TODO: this has to be a path on hosting machine
+const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
 
 exports.readScreenNameFromHost = async function () {
@@ -24,4 +25,12 @@ exports.getFileLastModifiedTime = function (fileFullPath) {
     }
 
     return stats.mtime.toUTCString();
+}
+
+exports.isArray = function (arr) {
+    return Array.isArray(arr) && arr.length;
+}
+
+exports.isNonEmptyArray = function (arr) {
+    return Array.isArray(arr) && arr.length && arr.length > 0;
 }
