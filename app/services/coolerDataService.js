@@ -3,6 +3,7 @@ const path = require('path');
 const axios = require('axios').default;
 const fs = require('fs');
 const config = require('./coolerCacheConfig');
+const httpService = require('./httpService');
 
 const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
 const _productsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-haw/`
@@ -75,61 +76,15 @@ function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection) {
     for (const imageFilename of imageCollection) {
-        const fileLastModifiedTime = utils.getFileLastModifiedTime(path.join(directoryToSaveTo, imageFilename));
         const fileUrl = `${baseUrl}${imageFilename}`;
-        const getHeaders = {
-            'If-Modified-Since': fileLastModifiedTime
-        };
-        try {
-            // Download the file:
-            const response = await axios.get(fileUrl, {
-                headers: getHeaders,
-                responseType: 'stream'
-            });
-            console.log(`Downloaded an image from: [${fileUrl}], will save it to: [${directoryToSaveTo}]`);
-            // Save the file:
-            const writeSteam = response.data.pipe(fs.createWriteStream(path.join(directoryToSaveTo, imageFilename)));
-            writeSteam.on('error', function (err) {
-                console.log(`Error saving image ${imageFilename} under ${directoryToSaveTo}.`
-                    + ` Details: ${err}`);
-            });
-        }
-        catch (error) {
-            if (error && error.response) { // HTTP error
-                if (error.response.status === 304) {
-                    // Not an error:
-                    console.log(`File at ${fileUrl} was not modified since last time, skipping.`);
-                }
-                else if (error.response.status === 404) {
-                    console.error(`File not found: ${fileUrl}`);
-                }
-            }
-            else {
-                console.error(`Error getting and saving file from URL ${fileUrl}: ${err}`);
-            }
-        }
+
+        await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
     }
 }
 
 function createDirectoriesForAssets() {
-    /*fs.mkdir(_storageLocalCoolerRootDir, (err) => {
-        console.error(`Error creating root dir for coolerCache under: ${_storageLocalCoolerRootDir}.`
-            + ` Details: [${err}]`);
-    });*/
-    createDirSync(_storageLocalProductsImagesDir);
-    createDirSync(_storageLocalLabelsImagesDir);
-    createDirSync(_storageLocalTagsImagesDir);
-    /*fs.mkdir(_storageLocalCoolerImagesDir, { recursive: true }, (err) => {
-        console.error(`Error creating dir for saving files under ${_storageLocalCoolerImagesDir}: ${err}`)
-    });*/
-}
-
-function createDirSync(dirPath) {
-    try {
-        fs.mkdirSync(dirPath, { recursive: true });
-    } catch (error) {
-        console.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
-    }
+    utils.createDirectoriesForAssetsSync(_storageLocalProductsImagesDir,
+        _storageLocalLabelsImagesDir, _storageLocalTagsImagesDir);
 }
 
 function getAllDirsToFilenamesDictionary(coolerData) {

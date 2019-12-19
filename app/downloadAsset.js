@@ -12,7 +12,7 @@ const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
-
+/*
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
@@ -40,32 +40,6 @@ Client.fromEnvironment(Transport, function (err, client) {
     }
 });
 
-    
-
-                // Act on input messages to the module.
-                /*client.on('inputMessage', function (inputName, msg) {
-                    console.log('i got the message');
-                    pipeMessage(client, inputName, msg);
-                });*//*
-            }
-        });
-    }
-});
-// This function just pipes the messages without any change.
-/*
-function pipeMessage(client, inputName, msg) {
-    client.complete(msg, printResultFor('Receiving message'));
-
-    if (inputName === 'input1') {
-        var message = msg.getBytes().toString('utf8');
-        if (message) {
-            var outputMsg = new Message(message);
-            console.log('This is the message', message);
-            client.sendOutputEvent('output1', outputMsg, printResultFor('Sending received message'));
-        }
-    }
-}*/
-
 function sendDataToTriggerBridge(client) {
     adPlatformService.getAdPlatformData().then(
         (data) => {
@@ -75,9 +49,6 @@ function sendDataToTriggerBridge(client) {
                 printResultFor('Sent TriggerBridge assets'));
             console.log(`Sent the following data to Trigger Bridge: ${JSON.stringify(data)}`);
         });
-        //console.log(`Sent the following data to TB: ${JSON.stringify(data)}`));
-
-    
 }
 
 // Helper function to print results in the console
@@ -90,7 +61,7 @@ function printResultFor(op) {
             console.log(op + ' status: ' + res.constructor.name);
         }
     };
-}
+}*/
 // IOT HUB MESSANGE BROKER
 
 
@@ -132,6 +103,6 @@ const getCoolerData = async function () {
 
 
 
-//getCoolerData().then((data) => console.log('Finished!'));
-//adPlatformService.getAdPlatformData().then((data) => console.log(`yep done: ${JSON.stringify(data)}`));
+getCoolerData().then((data) => console.log('Finished!'));
+//adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data));
 //getAdPlatformData().then((data) => { console.log('final result: ' + data) });*/

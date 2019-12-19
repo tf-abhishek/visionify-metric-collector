@@ -1,6 +1,7 @@
 const _adPlatformConfig = require('./coolerCacheConfig');
 const utils = require('./utils');
 const config = require('./coolerCacheConfig');
+const httpService = require('./httpService');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios').default;
@@ -25,8 +26,8 @@ const _assetTypeToLocalDirectory = {
     [_tagAssetTypeKey]: _tagDirectoryPath,
 }
 
-exports.downloadAndSaveAdPlatformAssets = async function(adPlatformData) {
-    adPlatformData.forEach(campaign => {
+exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
+    for (const campaign of adPlatformData) {
         if (!campaign) {
             console.warn(`An empty campaign encountered`);
             return;
@@ -41,18 +42,22 @@ exports.downloadAndSaveAdPlatformAssets = async function(adPlatformData) {
         }
 
         const dirToSaveTo = _assetTypeToLocalDirectory[campaign.AdType]
-        const assetsToSave = campaign.Assets.filter(asset => asset.SasLink && asset.FileName).map(asset => {
-            return {[asset.FileName]:  asset.SasLink };
-        });
-        
+        if (!dirToSaveTo) {
+            console.error(`Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
+            return;
+        }
+        const assetsToSave = utils.toDictionary(campaign.Assets.filter(asset => asset.SasLink && asset.FileName),
+            asset => asset.FileName, asset => asset.SasLink);
+
+        createDirectoriesForAssets();
         for (var assetFilename in assetsToSave) {
             if (assetsToSave.hasOwnProperty(assetFilename)) {
                 const assetUrl = assetsToSave[assetFilename];
 
-                await downloadAsset(assetUrl, assetFilename, dirToSaveTo);
+                await  httpService.downloadAndSaveAssetsIfModifiedSince(assetUrl, assetFilename, dirToSaveTo);
             }
         }
-    });
+    };
 }
 
 exports.getAdPlatformData = async function () {
@@ -76,32 +81,14 @@ exports.getAdPlatformData = async function () {
 
         return adPlatformData;
     } catch (error) {
-        console.error(`Error getting AdPlatform data: ${error}`;
+        console.error(`Error getting AdPlatform data: ${error}`);
     }
-}
-
-const downloadAsset = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
-    const fileLastModifiedTime = utils.getFileLastModifiedTime(path.join(directoryPathToSaveTo, assetFilename));
-        const getHeaders = {
-            'If-Modified-Since': fileLastModifiedTime
-        };
-    const response = await axios.get(downloadUrl, {
-        headers: getHeaders,
-        responseType: 'stream'
-    });
-    console.log(`Downloaded an asset from: [${downloadUrl}], will save it to: [${directoryPathToSaveTo}]`);
-    // Save the file:
-    const writeSteam = response.data.pipe(fs.createWriteStream(path.join(directoryPathToSaveTo, assetFilename)));
-    writeSteam.on('error', function (err) {
-        console.log(`Error saving asset ${assetFilename} under ${directoryPathToSaveTo}.`
-            + ` Details: ${err}`);
-    });
 }
 
 const buildAdPlatformGetUrl = async function () {
     const screenName = await utils.readScreenNameFromHost();
 
-    return `${_adPlatformConfig.adPlatformBaseUrlDev}${screenName}?code=${_adPlatformConfig.adPlatformFunctionCodeDev}`;
+    return `${_adPlatformConfig.adPlatformBaseUrl}${screenName}?code=${_adPlatformConfig.adPlatformFunctionCode}`;
 }
 
 const readAdPlatformDataFromDisk = async function () {
@@ -114,4 +101,9 @@ const readAdPlatformDataFromDisk = async function () {
 
         return JSON.parse(data);
     });
+}
+
+function createDirectoriesForAssets() {    
+    utils.createDirectoriesForAssetsSync(_fullDoorAdDirectoryPath, _middleBannerDirectoryPath,
+        _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath);
 }
