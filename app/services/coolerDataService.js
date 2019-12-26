@@ -19,10 +19,10 @@ const _storageLocalTagsImagesDir = path.join(config.coolerCacheRootFolder, _tags
 const _storageLocalLabelsImagesDir = path.join(config.coolerCacheRootFolder, _labelsAssetKey);
 var _assetCategoryToDirectoryDictionary = undefined;
 
-exports.getCoolerDataUrl = async function () {
-    const screenName = await utils.readScreenNameFromHost();
+exports.getCoolerData = async function () {
+    const coolerDataResponse = await axios.get(await getCoolerDataUrl());
 
-    return `${_coolerPath}${screenName}`;
+    return coolerDataResponse.data;
 }
 
 exports.saveAndPrependCoolerData = function (coolerData) {
@@ -63,6 +63,12 @@ exports.downloadAndSaveAssets = async function (coolerData) {
     }
 }
 
+const getCoolerDataUrl = async function () {
+    const screenName = await utils.readScreenNameFromHost();
+
+    return `${_coolerPath}${screenName}`;
+}
+
 function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
     if (_assetCategoryToDirectoryDictionary !== undefined) return _assetCategoryToDirectoryDictionary;
     _assetCategoryToDirectoryDictionary = {};
@@ -75,6 +81,11 @@ function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
 }
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection) {
+    if (!directoryToSaveTo || !baseUrl) {
+        console.error(`Cannot download asset since either the directory to save to or the base Url is empty;
+         baseUrl: [${baseUrl}], directoryToSaveTo: [${directoryToSaveTo}]`);
+        return;
+    }
     for (const imageFilename of imageCollection) {
         const fileUrl = `${baseUrl}${imageFilename}`;
 

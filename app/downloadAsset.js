@@ -8,16 +8,17 @@ const utils = require('./services/utils');
 
 // IOT HUB MESSANGE BROKER
 
+const getAdPlatformIntervalInMs = 60 * 1000;//60 * 60 * 1000;   // 1 Hour
+const getCoolerDataIntervalInMs = 60 * 1000;        // 1 Minute
 const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
-/*
+
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
     } else {
-
         client.on('error', function (err) {
             throw err;
         });
@@ -27,14 +28,10 @@ Client.fromEnvironment(Transport, function (err, client) {
             if (err) {
                 throw err;
             } else {
-                console.log('IoT Hub module client initialized, going to get coolerData');
-
+                
                 getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                // Send trigger bridge some stuff:
-                setInterval(() => {
-                    sendDataToTriggerBridge(client);
-                console.log('Sent some data to Josh');
-                }, 60 * 1000);
+                // Send trigger bridge some stuff:                
+                sendDataToTriggerBridge(client);
             }
         });
     }
@@ -43,11 +40,20 @@ Client.fromEnvironment(Transport, function (err, client) {
 function sendDataToTriggerBridge(client) {
     adPlatformService.getAdPlatformData().then(
         (data) => {
-            client.sendOutputEvent(
-                'playListData', 
-                new Message(JSON.stringify(data)),
-                printResultFor('Sent TriggerBridge assets'));
-            console.log(`Sent the following data to Trigger Bridge: ${JSON.stringify(data)}`);
+            if (data) { // TODO: check what happens if not modified since (empty response? is this condition sufficient?)
+                adPlatformService.downloadAndSaveAdPlatformAssets(data).then(
+                    (emptyData) => {
+                        client.sendOutputEvent(
+                            'playListData',
+                            new Message(JSON.stringify(data)),
+                            printResultFor('Sent TriggerBridge assets'));
+                        console.log(`Sent AdPlatform JSON to TriggerBridge`);
+
+                        setTimeout(() => { 
+                            sendDataToTriggerBridge(client);
+                        }, getAdPlatformIntervalInMs);
+                    })
+            }
         });
 }
 
@@ -61,48 +67,31 @@ function printResultFor(op) {
             console.log(op + ' status: ' + res.constructor.name);
         }
     };
-}*/
+}
 // IOT HUB MESSANGE BROKER
-
-
-
-
-
-
 
 const axios = require('axios').default;
 Date.MIN_VALUE = new Date(-8640000000000000);
 Array.prototype.extend = function (other_array) {
     if (!utils.isArray(other_array)) return;
-    other_array.forEach(function(v) { this.push(v)}, this) ;
+    other_array.forEach(function (v) { this.push(v) }, this);
 }
 
 const coolerDataService = require('./services/coolerDataService');
 
 const getCoolerData = async function () {
-    const coolerDataUrl = await coolerDataService.getCoolerDataUrl();
-    let coolerData = await axios.get(coolerDataUrl);
-    coolerDataService.saveAndPrependCoolerData(coolerData.data);
+    let coolerData = await coolerDataService.getCoolerData();
+    coolerDataService.saveAndPrependCoolerData(coolerData);
 
-    await coolerDataService.downloadAndSaveAssets(coolerData.data);
+    await coolerDataService.downloadAndSaveAssets(coolerData);
 
-    console.log('done');
+    setTimeout(async () => {
+        await getCoolerData();
+    }, getCoolerDataIntervalInMs);
 }
 
 
-
-
-
-/*(async() =>{
-    const sname = await readScreenNameFromHost();
-    console.log('sn1: ' + sname)
-})()*/
-
-//console.log( getFileLastModifiedTime('apiService.js'));
-
-
-
-
-getCoolerData().then((data) => console.log('Finished!'));
-//adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data));
+//sendDataToTriggerBridge({sendOutputEvent: function(...abc) {console.log(abc)}});
+//getCoolerData().then((data) => console.log('Finished!'));
+//adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
 //getAdPlatformData().then((data) => { console.log('final result: ' + data) });*/

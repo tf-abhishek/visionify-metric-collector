@@ -4,7 +4,8 @@ const fs = require('fs');
 const axios = require('axios').default;
 
 exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
-    const fileLastModifiedTime = utils.getFileLastModifiedTime(path.join(directoryPathToSaveTo, assetFilename));
+    const assetFullPath = path.join(directoryPathToSaveTo, assetFilename);
+    const fileLastModifiedTime = utils.getFileLastModifiedTime(assetFullPath);
     const getHeaders = {
         'If-Modified-Since': fileLastModifiedTime
     };
@@ -16,7 +17,7 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
         });
         console.log(`Downloaded an asset from: [${downloadUrl}], will save it to: [${directoryPathToSaveTo}]`);
         // Save the file:
-        const writeSteam = response.data.pipe(fs.createWriteStream(path.join(directoryPathToSaveTo, assetFilename)));
+        const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
         writeSteam.on('error', function (err) {
             console.log(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
                 + ` Details: ${err}`);
@@ -35,7 +36,8 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
                 console.error(`Authentication failed (403) for ${downloadUrl}: [${error.response.statusText}]`);
             }
             else {
-                console.error(`HTTP error when trying to get ${downloadUrl}: [${error.response.statusText}]`);
+                console.error(`HTTP ${error.response.status} error when trying to 
+                get ${downloadUrl}: [${error.response.statusText}]`);
             }
         }
         else {

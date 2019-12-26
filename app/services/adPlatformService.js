@@ -12,18 +12,24 @@ const _fullDoorAdAssetTypeKey = 'FullDoorAd';
 const _middleBannerAssetTypeKey = 'MiddleBanner';
 const _topBannerAssetTypeKey = 'TopBanner';
 const _nativeAdAssetTypeKey = 'NativeAd';
+const _nativeAdAssetTypeDirectory = 'products';
 const _tagAssetTypeKey = 'Tag';
+const _tagAssetTypeDirectory = 'tags';
+const _labelAssetTypeKey = 'Label';
+const _labelAssetTypeKDirectory = 'labels';
 const _fullDoorAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _fullDoorAdAssetTypeKey);
 const _middleBannerDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _middleBannerAssetTypeKey);
 const _topBannerDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _topBannerAssetTypeKey);
-const _nativeAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _nativeAdAssetTypeKey);
-const _tagDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _tagAssetTypeKey);
+const _nativeAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _nativeAdAssetTypeDirectory);
+const _tagDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _tagAssetTypeDirectory);
+const _labelDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _labelAssetTypeKDirectory);
 const _assetTypeToLocalDirectory = {
     [_fullDoorAdAssetTypeKey]: _fullDoorAdDirectoryPath,
     [_middleBannerAssetTypeKey]: _middleBannerDirectoryPath,
     [_topBannerAssetTypeKey]: _topBannerDirectoryPath,
     [_nativeAdAssetTypeKey]: _nativeAdDirectoryPath,
     [_tagAssetTypeKey]: _tagDirectoryPath,
+    [_labelAssetTypeKey]: _labelDirectoryPath,
 }
 
 exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
@@ -43,7 +49,7 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
 
         const dirToSaveTo = _assetTypeToLocalDirectory[campaign.AdType]
         if (!dirToSaveTo) {
-            console.error(`Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
+            console.error(`Error: Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
             return;
         }
         const assetsToSave = utils.toDictionary(campaign.Assets.filter(asset => asset.SasLink && asset.FileName),
@@ -77,12 +83,28 @@ exports.getAdPlatformData = async function () {
         if (!utils.isArray(adPlatformData)) {
             // TODO: better handling
             adPlatformData = await readAdPlatformDataFromDisk();
+        } else {
+            saveAdPlatformJson(adPlatformData);
         }
 
         return adPlatformData;
     } catch (error) {
         console.error(`Error getting AdPlatform data: ${error}`);
     }
+}
+
+const saveAdPlatformJson = function(adPlatformData) {
+    let fileFullPath = path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename);
+    utils.createDirectoriesForAssetsSync(_storageLocalAdPlatformDataDir);
+    fs.writeFile(fileFullPath,
+        JSON.stringify(adPlatformData),
+        { flag: 'w+' },
+        function (err) {
+            if (err) {
+                return console.error(`Error saving adPlatformData: ${err}`);
+            }
+            console.log(`adPlatformData file was saved under ${fileFullPath}`);
+        });
 }
 
 const buildAdPlatformGetUrl = async function () {
