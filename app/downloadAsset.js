@@ -28,6 +28,7 @@ Client.fromEnvironment(Transport, function (err, client) {
             if (err) {
                 throw err;
             } else {
+                console.log('IoT Hub module client initialized, going to get coolerData');
                 
                 getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
                 // Send trigger bridge some stuff:                
@@ -40,7 +41,8 @@ Client.fromEnvironment(Transport, function (err, client) {
 function sendDataToTriggerBridge(client) {
     adPlatformService.getAdPlatformData().then(
         (data) => {
-            if (data) { // TODO: check what happens if not modified since (empty response? is this condition sufficient?)
+            if (data) {
+                console.log('Got some data from Ad-Platform.')
                 adPlatformService.downloadAndSaveAdPlatformAssets(data).then(
                     (emptyData) => {
                         client.sendOutputEvent(
@@ -48,12 +50,20 @@ function sendDataToTriggerBridge(client) {
                             new Message(JSON.stringify(data)),
                             printResultFor('Sent TriggerBridge assets'));
                         console.log(`Sent AdPlatform JSON to TriggerBridge`);
-
-                        setTimeout(() => { 
-                            sendDataToTriggerBridge(client);
-                        }, getAdPlatformIntervalInMs);
                     })
+            } else {
+                console.log('Ad-Platform did not return any data, which means no changes since last call.')
             }
+            // In any case, schedule another call to Ad-Platform:
+            setTimeout(() => { 
+                sendDataToTriggerBridge(client);
+            }, getAdPlatformIntervalInMs);
+        }, (err) => {
+            console.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
+
+            setTimeout(() => { 
+                sendDataToTriggerBridge(client);
+            }, getAdPlatformIntervalInMs);
         });
 }
 
@@ -83,7 +93,11 @@ const getCoolerData = async function () {
     let coolerData = await coolerDataService.getCoolerData();
     coolerDataService.saveAndPrependCoolerData(coolerData);
 
-    await coolerDataService.downloadAndSaveAssets(coolerData);
+    try {
+        await coolerDataService.downloadAndSaveAssets(coolerData);
+    } catch (error) {
+        console.error(`Error in outter loop of getCoolerData: ${error}. Will keep calling next interval.`)
+    }
 
     setTimeout(async () => {
         await getCoolerData();
