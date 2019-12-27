@@ -2,6 +2,7 @@ const _adPlatformConfig = require('./coolerCacheConfig');
 const utils = require('./utils');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
+const logger = require('./logger');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios').default;
@@ -33,23 +34,27 @@ const _assetTypeToLocalDirectory = {
 }
 
 exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
+    if (!adPlatformData) {
+        logger.error('Empty adPlatform data, cannot process. Aborting.');
+        return;
+    }
     for (const campaign of adPlatformData) {
         if (!campaign) {
-            console.warn(`An empty campaign encountered`);
+            logger.warn(`An empty campaign encountered`);
             return;
         }
         if (!campaign.AdType) {
-            console.error(`Cannot interpret adType for campaign ${JSON.stringify(campaign)}`);
+            logger.error(`Cannot interpret adType for campaign ${JSON.stringify(campaign)}`);
             return;
         }
         if (!campaign.Assets) {
-            console.warn(`Campaign has no assets: ${campaign}`);
+            logger.warn(`Campaign has no assets: ${campaign}`);
 
         }
 
         const dirToSaveTo = _assetTypeToLocalDirectory[campaign.AdType]
         if (!dirToSaveTo) {
-            console.error(`Error: Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
+            logger.error(`Error: Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
             return;
         }
         const assetsToSave = utils.toDictionary(campaign.Assets.filter(asset => asset.SasLink && asset.FileName),
@@ -89,7 +94,7 @@ exports.getAdPlatformData = async function () {
 
         return adPlatformData;
     } catch (error) {
-        console.error(`Error getting AdPlatform data: ${error}`);
+        logger.error(`Error getting AdPlatform data: ${error}`);
     }
 }
 
@@ -101,9 +106,9 @@ const saveAdPlatformJson = function(adPlatformData) {
         { flag: 'w+' },
         function (err) {
             if (err) {
-                return console.error(`Error saving adPlatformData: ${err}`);
+                return logger.error(`Error saving adPlatformData: ${err}`);
             }
-            console.log(`adPlatformData file was saved under ${fileFullPath}`);
+            logger.info(`adPlatformData file was saved under ${fileFullPath}`);
         });
 }
 
@@ -117,7 +122,7 @@ const readAdPlatformDataFromDisk = async function () {
     let fileFullPath = path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename);
     fs.readFile(fileFullPath, 'utf8', (err, data) => {
         if (err) {
-            console.error(`Could not read file from ${fileFullPath}. Details:${err}`);
+            logger.error(`Could not read file from ${fileFullPath}. Details:${err}`);
             return;
         }
 

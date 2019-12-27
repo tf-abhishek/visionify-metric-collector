@@ -1,6 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
 const config = require('./coolerCacheConfig');
+const logger = require('./logger');
 
 const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
@@ -57,6 +58,6 @@ function createDirSync(dirPath) {
     try {
         fs.mkdirSync(dirPath, { recursive: true });
     } catch (error) {
-        console.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
+        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
     }
 }

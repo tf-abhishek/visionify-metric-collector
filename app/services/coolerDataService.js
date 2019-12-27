@@ -4,6 +4,7 @@ const axios = require('axios').default;
 const fs = require('fs');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
+const logger = require('./logger');
 
 const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
 const _productsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-haw/`
@@ -29,7 +30,7 @@ exports.saveAndPrependCoolerData = function (coolerData) {
     /*if (typeof window !== 'undefined') {
         window.coolerData = coolerData;
     } else {
-        console.warn(`Window is not defined; Cannot create coolerData object on it`);
+        logger.warn(`Window is not defined; Cannot create coolerData object on it`);
     }*/
     createDirectoriesForAssets();
 
@@ -38,9 +39,9 @@ exports.saveAndPrependCoolerData = function (coolerData) {
         { flag: 'w+' },
         function (err) {
             if (err) {
-                return console.error(`Error saving coolerData: ${err}`);
+                return logger.error(`Error saving coolerData: ${err}`);
             }
-            console.log(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
+            logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
         });
 }
 
@@ -82,7 +83,7 @@ function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection) {
     if (!directoryToSaveTo || !baseUrl) {
-        console.error(`Cannot download asset since either the directory to save to or the base Url is empty;
+        logger.error(`Cannot download asset since either the directory to save to or the base Url is empty;
          baseUrl: [${baseUrl}], directoryToSaveTo: [${directoryToSaveTo}]`);
         return;
     }
@@ -122,7 +123,7 @@ function getAllProductImagesComponentFilenames(coolerData) {
 
 function getShelvesComponentFilenames(coolerData) {
     if (!(coolerData.metadata && coolerData.metadata.shelves)) {
-        console.error(`No Shelves data in coolerData file`);
+        logger.error(`No Shelves data in coolerData file`);
 
         return;
     }
@@ -136,7 +137,7 @@ function getShelvesComponentFilenames(coolerData) {
 
 function getLabelsAndTagsComponentFilenamesDictionary(coolerData) {
     if (!(coolerData && coolerData.products)) {
-        console.error('No products in coolerData file');
+        logger.error('No products in coolerData file');
 
         return;
     }

@@ -2,6 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 const path = require('path');
 const utils = require('./services/utils');
+const logger = require('./services/logger');
 
 //var coolerName = "WBA-16092-000-C012"
 
@@ -42,24 +43,24 @@ function sendDataToTriggerBridge(client) {
     adPlatformService.getAdPlatformData().then(
         (data) => {
             if (data) {
-                console.log('Got some data from Ad-Platform.')
+                logger.info('Got some data from Ad-Platform.')
                 adPlatformService.downloadAndSaveAdPlatformAssets(data).then(
                     (emptyData) => {
                         client.sendOutputEvent(
                             'playListData',
                             new Message(JSON.stringify(data)),
                             printResultFor('Sent TriggerBridge assets'));
-                        console.log(`Sent AdPlatform JSON to TriggerBridge`);
+                            logger.info(`Sent AdPlatform JSON to TriggerBridge`);
                     })
             } else {
-                console.log('Ad-Platform did not return any data, which means no changes since last call.')
+                logger.info('Ad-Platform did not return any data, which means no changes since last call.')
             }
             // In any case, schedule another call to Ad-Platform:
             setTimeout(() => { 
                 sendDataToTriggerBridge(client);
             }, getAdPlatformIntervalInMs);
         }, (err) => {
-            console.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
+            logger.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
 
             setTimeout(() => { 
                 sendDataToTriggerBridge(client);
@@ -96,7 +97,7 @@ const getCoolerData = async function () {
     try {
         await coolerDataService.downloadAndSaveAssets(coolerData);
     } catch (error) {
-        console.error(`Error in outter loop of getCoolerData: ${error}. Will keep calling next interval.`)
+        logger.error(`Error in outter loop of getCoolerData: ${error}. Will keep calling next interval.`)
     }
 
     setTimeout(async () => {

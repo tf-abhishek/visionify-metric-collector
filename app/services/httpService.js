@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const logger = require('./logger');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios').default;
@@ -15,11 +16,11 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
             headers: getHeaders,
             responseType: 'stream'
         });
-        console.log(`Downloaded an asset from: [${downloadUrl}], will save it to: [${directoryPathToSaveTo}]`);
+        logger.info(`Downloaded an asset from: [${downloadUrl}], will save it to: [${directoryPathToSaveTo}]`);
         // Save the file:
         const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
         writeSteam.on('error', function (err) {
-            console.log(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
+            logger.info(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
                 + ` Details: ${err}`);
         });
     }
@@ -27,21 +28,21 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
         if (error && error.response) { // HTTP error
             if (error.response.status === 304) {
                 // Not an error:
-                console.log(`File at ${downloadUrl} was not modified since last time, skipping.`);
+                logger.info(`File at ${downloadUrl} was not modified since last time, skipping.`);
             }
             else if (error.response.status === 404) {
-                console.error(`File not found (404): ${downloadUrl}`);
+                logger.error(`File not found (404): ${downloadUrl}`);
             }
             else if (error.response.status === 403) {
-                console.error(`Authentication failed (403) for ${downloadUrl}: [${error.response.statusText}]`);
+                logger.error(`Authentication failed (403) for ${downloadUrl}: [${error.response.statusText}]`);
             }
             else {
-                console.error(`HTTP ${error.response.status} error when trying to 
+                logger.error(`HTTP ${error.response.status} error when trying to 
                 get ${downloadUrl}: [${error.response.statusText}]`);
             }
         }
         else {
-            console.error(`Error getting and saving file from URL ${downloadUrl}: ${err}`);
+            logger.error(`Error getting and saving file from URL ${downloadUrl}: ${err}`);
         }
     }
 }
