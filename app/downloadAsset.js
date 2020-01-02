@@ -3,7 +3,9 @@ const readline = require('readline');
 const path = require('path');
 const utils = require('./services/utils');
 const logger = require('./services/logger');
-
+const config = require('./services/coolerCacheConfig');
+var http = require('http');
+var static = require('node-static');
 //var coolerName = "WBA-16092-000-C012"
 
 
@@ -15,6 +17,21 @@ const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
+
+var fileServer = new static.Server(config.coolerCacheRootFolder);
+
+http.createServer(function(req, res) {
+    req.addListener('end', function() {
+        fileServer.serve(req, res, function(err, result) {
+            if (err) {
+                logger.error(`Error serving ${req.url}:${err.message}`);
+
+                response.writeHead(err.status, err.headers);
+                response.end();
+            }
+        });
+    }).resume();
+}).listen(8080);
 
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
@@ -40,8 +57,16 @@ Client.fromEnvironment(Transport, function (err, client) {
 });
 
 function sendDataToTriggerBridge(client) {
+    logger.info('Requesting Ad-Platform data');
+    sendTelemetryTestMessage(client);
     adPlatformService.getAdPlatformData().then(
         (data) => {
+            try {
+                sendPOP(client);
+            } catch (error) {
+                logger.error(`Error sending POP: ${error}`);
+            }
+            
             if (data) {
                 logger.info('Got some data from Ad-Platform.')
                 adPlatformService.downloadAndSaveAdPlatformAssets(data).then(
@@ -68,6 +93,79 @@ function sendDataToTriggerBridge(client) {
         });
 }
 
+function sendTelemetryTestMessage(client) {
+    var messageBody = JSON.stringify(Object.assign({}, {
+        "Weather": {
+            "Temperature": 50,
+            "Time": "2020-01-01T00:00:00.000Z",
+            "PrevTemperatures": [
+                20,
+                30,
+                40
+            ],
+        }
+    }));
+    
+    // Encode message body using UTF-8  
+    var messageBytes = Buffer.from(messageBody, "utf8");
+    
+    var message = new Message(messageBytes);
+    
+    // Set message body type and content encoding 
+    message.contentEncoding = "utf-8";
+    message.contentType = "application/json";
+    
+    // Add other custom application properties   
+    message.properties.add("telemetry", "true");
+    
+    logger.info(`*** SENDING TELEMETRY: ${message.data} ***`);
+
+    try {
+        client.sendEvent(message, function (err) {
+            if (err) {
+                logger.error('*** TELEMETRY send error: ' + err.toString());
+            } else {
+                logger.info(`*** TELEMETRY message sent :${message.data}. Content type : ${message.contentEncoding}, ${message.contentType}. props:${message.properties}`);
+            }
+          });
+
+          client.sendOutputEvent('*', message, function(err, res) {
+            if (err) logger.error('error: ' + err.toString());
+            if (res) logger.info('status: ' + res);
+          });
+    } catch (error) {
+        logger.error(`Error sending telemetry: ${error}`);
+    }
+
+    /*
+    client.sendEvent(message, (err, res) => {
+        if (err) logger.error('error: ' + err.toString());
+        if (res) logger.info('status: ' + res.constructor.name);
+    });*/
+}
+
+function sendPOP(client) {
+    let message = new Message(JSON.stringify({ 
+        played: 1, 
+        time: new Date(Date.now()).toUTCString() 
+    }))
+
+    logger.info(`*** SENDING POP: *** ${message.data}`);
+    
+    client.sendEvent(message, function (err) {
+        if (err) {
+            logger.error('*** POP send error: ' + err.toString());
+        } else {
+            logger.info(`*** POP message sent :${message.data}. Content type : ${message.contentEncoding}, ${message.contentType}`);
+        }
+      });
+/*
+    client.sendEvent(message, (err, res) => {
+        if (err) logger.error('error: ' + err.toString());
+        if (res) logger.info('status: ' + res.constructor.name);
+    });*/
+}
+
 // Helper function to print results in the console
 function printResultFor(op) {
     return function printResult(err, res) {
@@ -91,10 +189,10 @@ Array.prototype.extend = function (other_array) {
 const coolerDataService = require('./services/coolerDataService');
 
 const getCoolerData = async function () {
-    let coolerData = await coolerDataService.getCoolerData();
-    coolerDataService.saveAndPrependCoolerData(coolerData);
-
     try {
+        let coolerData = await coolerDataService.getCoolerData();
+        coolerDataService.saveAndPrependCoolerData(coolerData);
+
         await coolerDataService.downloadAndSaveAssets(coolerData);
     } catch (error) {
         logger.error(`Error in outter loop of getCoolerData: ${error}. Will keep calling next interval.`)

@@ -7,22 +7,22 @@ const { combine, printf } = format;
 const timestamp = () => moment().tz('America/Chicago').format('YYYY-MM-DD HH:mm:ss');
 
 const myFormat = printf(info => {
-  return `${timestamp()} - [${info.level}] : ${info.message}`;
+    return `${timestamp()} - [${info.level}] : ${info.message}`;
 });
 const logFilePath = process.env.logfilepath || './logs';
 
 const rotateFileTransport = new (transports.DailyRotateFile)({
-  filename: `${logFilePath}/CoolerCache-%DATE%.log`,
-  datePattern: 'YYYY-MM-DD',
-  zippedArchive: true,
-  maxSize: '20m',
-  maxFiles: '14d',
-  timestamp:true,
+    filename: `${logFilePath}/CoolerCache-%DATE%.log`,
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    timestamp: true,
 });
 
 const etransports = {
-  console: new (transports.Console)({'timestamp':true}),
-  rotateFile : rotateFileTransport
+    console: new (transports.Console)({ 'timestamp': true }),
+    rotateFile: rotateFileTransport
 };
 
 let logLevel = process.env.loglevel || 'info';
@@ -32,19 +32,24 @@ if (env === 'PROD') {
 }*/
 
 let logger = createLogger({
-  level: logLevel,
-  format: combine(
-    myFormat
-  ),
-  transports: [
-    etransports.console,
-    etransports.rotateFile
-  ]
+    level: logLevel,
+    format: combine(
+        myFormat
+    ),
+    transports: [
+        etransports.console,
+        etransports.rotateFile
+    ]
 });
 
 logger.stream = {
-  write: function(message, encoding) {
-    logger.info(message);
-  },
+    write: function (message, encoding) {
+        logger.info(message);
+    },
 };
+logger.exceptions.handle(
+    new transports.File({ filename: 'unhandledExceptions.log' })
+);
+logger.exitOnError = false;
+
 module.exports = logger;
