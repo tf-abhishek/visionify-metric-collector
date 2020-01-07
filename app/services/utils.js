@@ -1,8 +1,8 @@
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 const config = require('./coolerCacheConfig');
 const logger = require('./logger');
-
 //const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
 
@@ -27,6 +27,19 @@ exports.getFileLastModifiedTime = function (fileFullPath) {
     }
 
     return stats.mtime.toUTCString();
+}
+
+exports.readTextFile = function(fileFullPath) {
+    return fs.readFileSync(fileFullPath, 'utf8');
+}
+
+exports.writeNeidFile = function(neid) {
+    fs.writeFileSync(path.join(config.coolerCacheRootFolder, 'neid'), neid, { encoding: 'utf8' });
+}
+
+// Throws if neid file does not exist:
+exports.readNeidFileIfExists = function() {
+    return fs.readFileSync(path.join(config.coolerCacheRootFolder, 'neid'), 'utf8');
 }
 
 exports.createDirectoriesForAssetsSync = function(...directories) {

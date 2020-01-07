@@ -8,6 +8,7 @@ const merchAppSocket = require('./services/merchAppSocket');
 var http = require('http');
 var static = require('node-static');
 var socketFailuresCounter = 0;
+var debugCounter = 0;
 //var coolerName = "WBA-16092-000-C012"
 
 
@@ -23,7 +24,7 @@ const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
 
 initializeListenerToMerchApp();
-/*Client.fromEnvironment(Transport, function (err, client) {
+Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
     } else {
@@ -44,7 +45,7 @@ initializeListenerToMerchApp();
             }
         });
     }
-});*/
+});
 
 function initializeListenerToMerchApp() {
     try {
@@ -199,11 +200,19 @@ const coolerDataService = require('./services/coolerDataService');
 const getCoolerData = async function () {
     try {
         let coolerData = await coolerDataService.getCoolerData();
-        coolerDataService.saveAndPrependCoolerData(coolerData);
+debugCounter++;
 
-        await coolerDataService.downloadAndSaveAssets(coolerData);
+        if (coolerDataService.wasCoolerDataUpdated(coolerData) || debugCounter % 3 == 0) {
+            logger.info(`coolerData was updated, will download assets and then send the file over to merchApp.`);
+            await coolerDataService.downloadAndSaveAssets(coolerData);
+            logger.info('Downloaded all coolerData assets');
+
+            merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+            coolerDataService.saveCoolerDataToDisk(coolerData);
+        }
     } catch (error) {
-        logger.error(`Error in outter loop of getCoolerData: ${error}. Will keep calling next interval.`)
+        const stack = error.stack ? error.stack.split("\n") : '';
+        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
     }
 
     setTimeout(async () => {
@@ -212,12 +221,13 @@ const getCoolerData = async function () {
 }
 
 
-//sendDataToTriggerBridge({sendOutputEvent: function(...abc) {console.log(abc)}});
+//sendDataToTriggerBridge({sendOutpu--tEvent: function(...abc) {console.log(abc)}});
 //getCoolerData().then((data) => console.log('Finished!'));
 //adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
 //getAdPlatformData().then((data) => { console.log('final result: ' + data) });*/
 
 process.on('uncaughtException', err => {
     // TODO: Send telemetry of that exception
+    console.error(err);
     process.exit(1);
   });

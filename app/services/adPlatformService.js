@@ -72,6 +72,7 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
 }
 
 exports.getAdPlatformData = async function () {
+let adPlatformUrl;
 
     try {
         const adPlatformDataLastModified = utils.getFileLastModifiedTime(
@@ -79,7 +80,7 @@ exports.getAdPlatformData = async function () {
         const getHeaders = {
             'If-Modified-Since': adPlatformDataLastModified
         };
-        let adPlatformUrl = await buildAdPlatformGetUrl();
+        adPlatformUrl = await buildAdPlatformGetUrl();
 
         const adPlatformDataResponse = await axios.get(adPlatformUrl, {
             headers: getHeaders,
@@ -95,7 +96,14 @@ exports.getAdPlatformData = async function () {
 
         return adPlatformData;
     } catch (error) {
-        logger.error(`Error getting AdPlatform data: ${error}`);
+        if (error && error.response) { // HTTP error
+            if (error.response.status === 304) {
+                // Not an error:
+                logger.info(`File at ${adPlatformUrl} was not modified compared to local copy, will not download.`);
+            }
+        } else {
+            logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}`);
+        }
     }
 }
 
@@ -114,9 +122,9 @@ const saveAdPlatformJson = function(adPlatformData) {
 }
 
 const buildAdPlatformGetUrl = async function () {
-    const screenName = await httpService.getNEID();
+    const neid = await httpService.getNEID();
 
-    return `${_adPlatformConfig.adPlatformBaseUrl}${screenName}?code=${_adPlatformConfig.adPlatformFunctionCode}`;
+    return `${_adPlatformConfig.adPlatformBaseUrl}${neid}?code=${_adPlatformConfig.adPlatformFunctionCode}`;
 }
 
 const readAdPlatformDataFromDisk = async function () {

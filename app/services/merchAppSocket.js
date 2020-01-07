@@ -20,10 +20,10 @@ exports.initialize = function() {
     });
 }
 
-exports.sendMerchAppCoolerDataUpdate = function() {
+exports.sendMerchAppCoolerDataUpdate = function(coolerData) {
     const updatedKey = 'coolerDataUpdated';
-    const updatedValue =  { updatedKey: true };
+    //const updatedValue =  { updatedKey: true };
 
-    logger.info(`Sending merchApp a coolerData update: ${updatedValue}`)
-    server.emit(updatedKey, updatedValue);
+    //logger.info(`Sending merchApp a coolerData update: ${coolerData}`)
+    server.emit(updatedKey, coolerData);
 }

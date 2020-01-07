@@ -18,6 +18,8 @@ const _storageLocalCoolerCacheRootDir = config.coolerCacheRootFolder;
 const _storageLocalProductsImagesDir = path.join(config.coolerCacheRootFolder, _productsAssetKey);
 const _storageLocalTagsImagesDir = path.join(config.coolerCacheRootFolder, _tagsAssetKey);
 const _storageLocalLabelsImagesDir = path.join(config.coolerCacheRootFolder, _labelsAssetKey);
+const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.js`);
+const coolerDataWindowPrependPrefix = 'window.coolerData=';
 var _assetCategoryToDirectoryDictionary = undefined;
 
 exports.getCoolerData = async function () {
@@ -34,8 +36,9 @@ exports.saveAndPrependCoolerData = function (coolerData) {
     }*/
     createDirectoriesForAssets();
 
-    fs.writeFile(path.join(config.coolerCacheRootFolder, `coolerData.js`),
-        'window.coolerData=' + JSON.stringify(coolerData),
+    // We don't prepend anymore
+    fs.writeFile(coolerDataFileFullPath,
+        /*coolerDataWindowPrependPrefix + */JSON.stringify(coolerData),
         { flag: 'w+' },
         function (err) {
             if (err) {
@@ -43,6 +46,21 @@ exports.saveAndPrependCoolerData = function (coolerData) {
             }
             logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
         });
+}
+
+exports.wasCoolerDataUpdated = function(currentCoolerData) {
+    let previousCoolerData;
+    try {
+        previousCoolerData = utils.readTextFile(coolerDataFileFullPath);
+    } catch (error) {
+        logger.warn(`Could not read previous coolerData file from: ${coolerDataFileFullPath},
+        reason: [${error}]. Will therefore refer to it as the first time and return a positive result.`);
+
+        return true;
+    }
+
+    //return previousCoolerData.toLocaleLowerCase() === (coolerDataWindowPrependPrefix + currentCoolerData).toLocaleLowerCase;
+    return previousCoolerData.toLocaleLowerCase() !== JSON.stringify(currentCoolerData).toLocaleLowerCase();
 }
 
 exports.downloadAndSaveAssets = async function (coolerData) {
@@ -65,9 +83,9 @@ exports.downloadAndSaveAssets = async function (coolerData) {
 }
 
 const getCoolerDataUrl = async function () {
-    const screenName = await httpService.getNEID();
+    const neid = await httpService.getNEID();
 
-    return `${_coolerPath}${screenName}`;
+    return `${_coolerPath}${neid}`;
 }
 
 function getAssetCategoryToDirectoryAndBaseUrlDictionary() {

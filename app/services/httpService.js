@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const axios = require('axios').default;
+let _neid = '';
 
 exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
     const assetFullPath = path.join(directoryPathToSaveTo, assetFilename);
@@ -50,12 +51,25 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
 }
 
 exports.getNEID = async function() {
+    if (!_neid) {
+        _neid = await getNeidFromLocationApi();
+        // For subsequent dockers initializations, write to file as a fallback for API calls issues
+        utils.writeNeidFile(_neid);
+    }
+
+    return _neid;
+}
+
+async function getNeidFromLocationApi(){
     let response;
     try {
-        const neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
+        let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
+        neidUrl = `${config.NeidQueryAddress}cs-v04-000-1106`;
         response = await axios.get(neidUrl);
     } catch (error) {
-        logger.error(`Error getting NEID for device ${os.hostname()}: [${error}]`);
+        logger.warn(`Error getting NEID for device ${os.hostname()}: [${error}]. Will try to read from file, if exists`);
+
+        return utils.readNeidFileIfExists();
     }
 
     if (!response.data || !response.data.data || !response.data.data.assets){
@@ -71,5 +85,8 @@ exports.getNEID = async function() {
         logger.warning(`Returned data from NEID query had more than one results: [${response.data}]. Returning first`);
     }
 
-    return response.data.data.assets[0].neid;
+    const neid = 'WBA-13827-000-C016'//response.data.data.assets[0].neid;
+    logger.info(`Got NEID for the device: ${neid}.`); //Whole response: [${JSON.stringify(response.data)}]. hostname: ${os.hostname()}`);
+
+    return neid;
 }
