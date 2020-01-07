@@ -23,17 +23,13 @@ const coolerDataWindowPrependPrefix = 'window.coolerData=';
 var _assetCategoryToDirectoryDictionary = undefined;
 
 exports.getCoolerData = async function () {
+    logger.info(`Getting coolerData.`);
     const coolerDataResponse = await axios.get(await getCoolerDataUrl());
 
     return coolerDataResponse.data;
 }
 
-exports.saveAndPrependCoolerData = function (coolerData) {
-    /*if (typeof window !== 'undefined') {
-        window.coolerData = coolerData;
-    } else {
-        logger.warn(`Window is not defined; Cannot create coolerData object on it`);
-    }*/
+exports.saveCoolerDataToDisk = function (coolerData) {
     createDirectoriesForAssets();
 
     // We don't prepend anymore

@@ -24,6 +24,6 @@ exports.sendMerchAppCoolerDataUpdate = function(coolerData) {
     const updatedKey = 'coolerDataUpdated';
     //const updatedValue =  { updatedKey: true };
 
-    //logger.info(`Sending merchApp a coolerData update: ${coolerData}`)
+    logger.info(`Sending merchApp a coolerData update`);//: ${coolerData}`)
     server.emit(updatedKey, coolerData);
 }

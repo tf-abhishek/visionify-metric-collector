@@ -209,6 +209,8 @@ debugCounter++;
 
             merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
+        } else {
+            logger.info('Got coolerData, however it was not modified since last time, so no further actions will be taken');
         }
     } catch (error) {
         const stack = error.stack ? error.stack.split("\n") : '';
