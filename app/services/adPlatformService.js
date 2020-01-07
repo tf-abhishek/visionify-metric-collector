@@ -72,14 +72,15 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
 }
 
 exports.getAdPlatformData = async function () {
-    const adPlatformDataLastModified = utils.getFileLastModifiedTime(
-        path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
-    const getHeaders = {
-        'If-Modified-Since': adPlatformDataLastModified
-    };
-    let adPlatformUrl = await buildAdPlatformGetUrl();
 
     try {
+        const adPlatformDataLastModified = utils.getFileLastModifiedTime(
+            path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
+        const getHeaders = {
+            'If-Modified-Since': adPlatformDataLastModified
+        };
+        let adPlatformUrl = await buildAdPlatformGetUrl();
+
         const adPlatformDataResponse = await axios.get(adPlatformUrl, {
             headers: getHeaders,
         });
@@ -113,7 +114,7 @@ const saveAdPlatformJson = function(adPlatformData) {
 }
 
 const buildAdPlatformGetUrl = async function () {
-    const screenName = await utils.readScreenNameFromHost();
+    const screenName = await httpService.getNEID();
 
     return `${_adPlatformConfig.adPlatformBaseUrl}${screenName}?code=${_adPlatformConfig.adPlatformFunctionCode}`;
 }

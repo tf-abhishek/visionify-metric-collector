@@ -3,10 +3,11 @@ const readline = require('readline');
 const config = require('./coolerCacheConfig');
 const logger = require('./logger');
 
-const screenNameFilePath = config.screenNEIDPath;
+//const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
 
-exports.readScreenNameFromHost = async function () {
+/*exports.getScreenNameForDevice = async function () {
+    // We used to expect this to be located on a filename, however we now use a REST call instead.
     const readStream = fs.createReadStream(screenNameFilePath);
     readLineIntefrace = readline.createInterface(readStream);
 
@@ -15,7 +16,7 @@ exports.readScreenNameFromHost = async function () {
     }
 
     return _screenName;
-}
+}*/
 
 exports.getFileLastModifiedTime = function (fileFullPath) {
     let stats = undefined;
@@ -34,6 +35,10 @@ exports.createDirectoriesForAssetsSync = function(...directories) {
 
 exports.isArray = function (arr) {
     return Array.isArray(arr) && arr.length;
+}
+
+exports.isEmptyArray = function (arr) {
+    return Array.isArray(arr) && arr.length === 0;
 }
 
 exports.isNonEmptyArray = function (arr) {

@@ -65,7 +65,7 @@ exports.downloadAndSaveAssets = async function (coolerData) {
 }
 
 const getCoolerDataUrl = async function () {
-    const screenName = await utils.readScreenNameFromHost();
+    const screenName = await httpService.getNEID();
 
     return `${_coolerPath}${screenName}`;
 }

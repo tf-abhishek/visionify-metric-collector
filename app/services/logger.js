@@ -48,7 +48,7 @@ logger.stream = {
     },
 };
 logger.exceptions.handle(
-    new transports.File({ filename: 'unhandledExceptions.log' })
+    new transports.File({ filename: 'CC-unhandledExceptions.log' })
 );
 logger.exitOnError = false;
 
