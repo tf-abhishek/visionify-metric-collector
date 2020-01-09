@@ -34,7 +34,7 @@ exports.readTextFile = function(fileFullPath) {
 }
 
 exports.writeNeidFile = function(neid) {
-    createDirSync(coolerCacheRootFolder);
+    createDirSync(config.coolerCacheRootFolder);
     fs.writeFileSync(path.join(config.coolerCacheRootFolder, 'neid'), neid, { encoding: 'utf8' });
 }
 
