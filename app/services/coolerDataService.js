@@ -18,7 +18,7 @@ const _storageLocalCoolerCacheRootDir = config.coolerCacheRootFolder;
 const _storageLocalProductsImagesDir = path.join(config.coolerCacheRootFolder, _productsAssetKey);
 const _storageLocalTagsImagesDir = path.join(config.coolerCacheRootFolder, _tagsAssetKey);
 const _storageLocalLabelsImagesDir = path.join(config.coolerCacheRootFolder, _labelsAssetKey);
-const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.js`);
+const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);
 const coolerDataWindowPrependPrefix = 'window.coolerData=';
 var _assetCategoryToDirectoryDictionary = undefined;
 
@@ -32,19 +32,27 @@ exports.getCoolerData = async function () {
 exports.saveCoolerDataToDisk = function (coolerData) {
     createDirectoriesForAssets();
 
-    // We don't prepend anymore
-    fs.writeFile(coolerDataFileFullPath,
-        /*coolerDataWindowPrependPrefix + */JSON.stringify(coolerData),
+    try {
+        fs.writeFileSync(coolerDataFileFullPath,
+            JSON.stringify(coolerData),
+            { flag: 'w+'});
+        logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
+    } catch (error) {
+        logger.error(`Error saving coolerData: ${err}`);
+    }
+    
+    /*fs.writeFile(coolerDataFileFullPath,
+        /*coolerDataWindowPrependPrefix + *//*JSON.stringify(coolerData),
         { flag: 'w+' },
         function (err) {
             if (err) {
                 return logger.error(`Error saving coolerData: ${err}`);
             }
             logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
-        });
+        });*/
 }
 
-exports.wasCoolerDataUpdated = function(currentCoolerData) {
+exports.wasCoolerDataUpdated = function (currentCoolerData) {
     let previousCoolerData;
     try {
         previousCoolerData = utils.readTextFile(coolerDataFileFullPath);
@@ -65,7 +73,7 @@ exports.downloadAndSaveAssets = async function (coolerData) {
 
     const allImagesDictionary = getAllDirsToFilenamesDictionary(coolerData);
     const assetCategoryToDirectoryAndBaseUrlDictionary = getAssetCategoryToDirectoryAndBaseUrlDictionary();
-    
+
     for (var assetCategory in allImagesDictionary) {
         // check if the property/key is defined in the object itself, not in parent
         if (allImagesDictionary.hasOwnProperty(assetCategory)) {
@@ -103,8 +111,11 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
     }
     for (const imageFilename of imageCollection) {
         const fileUrl = `${baseUrl}${imageFilename}`;
-
-        await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
+        if (imageFilename === '18685200024_C1C1.png' || imageFilename === '18685200024_C1C1_SINGLE.png') { 
+            logger.info(`Hahahaahahahahahahaahha, ${imageFilename}`); 
+        } else {
+            await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
+        }
     }
 }
 
@@ -168,7 +179,7 @@ function getLabelsAndTagsComponentFilenamesDictionary(coolerData) {
             tags.add(`${product.tag.trim()}.${_imageFileExtension}`);
         }
     })
-    
+
     results[_labelsAssetKey] = Array.from(labels);
     results[_tagsAssetKey] = Array.from(tags);
 

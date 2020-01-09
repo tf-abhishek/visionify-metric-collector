@@ -32,10 +32,19 @@ const _assetTypeToLocalDirectory = {
     [_tagAssetTypeKey]: _tagDirectoryPath,
     [_labelAssetTypeKey]: _labelDirectoryPath,
 }
+const _adPlatformNothingChanged = 'Not modified';
+
+let _firstAdPlatformServiceRun = true;
+
+exports.adPlatformNothingChanged = _adPlatformNothingChanged;
 
 exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
-    if (!adPlatformData) {
-        logger.error('Empty adPlatform data, cannot process. Aborting.');
+    if (!adPlatformData || utils.isEmptyArray(adPlatformData)) {
+        logger.info('Empty adPlatform data, nothing to download. Aborting.');
+        return;
+    }
+    if (adPlatformData === _adPlatformNothingChanged) {
+        logger.info('No changes in ad-platform data');
         return;
     }
     for (const campaign of adPlatformData) {
@@ -77,18 +86,17 @@ let adPlatformUrl;
     try {
         const adPlatformDataLastModified = utils.getFileLastModifiedTime(
             path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
-        const getHeaders = {
-            'If-Modified-Since': adPlatformDataLastModified
-        };
+        const getHeaders = getAdPlatformRequestHeaders(adPlatformDataLastModified);
         adPlatformUrl = await buildAdPlatformGetUrl();
 
         const adPlatformDataResponse = await axios.get(adPlatformUrl, {
             headers: getHeaders,
         });
-        const adPlatformData = adPlatformDataResponse.data;
+        let adPlatformData = adPlatformDataResponse.data;
 
         if (!utils.isArray(adPlatformData)) {
             // TODO: better handling
+            logger.warn(`adPlatformData is not an array. Will fallback to read from disk. Contents: ${adPlatformData}`);
             adPlatformData = await readAdPlatformDataFromDisk();
         } else {
             saveAdPlatformJson(adPlatformData);
@@ -99,12 +107,28 @@ let adPlatformUrl;
         if (error && error.response) { // HTTP error
             if (error.response.status === 304) {
                 // Not an error:
-                logger.info(`File at ${adPlatformUrl} was not modified compared to local copy, will not download.`);
+                logger.info(`File at ${utils.toUnconfidentialUrl(adPlatformUrl)} was not modified compared to local copy, will not download.`);
+
+                return _adPlatformNothingChanged;
             }
         } else {
-            logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}`);
+            const stack = error.stack ? error.stack.split("\n") : '';
+            logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`);
         }
     }
+}
+
+const getAdPlatformRequestHeaders = function(adPlatformDataLastModified) {
+    // Motive: Since we could have potentially switched doors, the "last modified time" for our
+    // local ad-platform-data file might be related to a different door, and we do not want to
+    // get an empty response based on that. Therfeore, after boot, we will always get adPlatformData.
+    const adPlatformGetHeaders = _firstAdPlatformServiceRun ? { } : {
+        'If-Modified-Since': adPlatformDataLastModified
+    };
+
+    _firstAdPlatformServiceRun = false;
+
+    return adPlatformGetHeaders;
 }
 
 const saveAdPlatformJson = function(adPlatformData) {

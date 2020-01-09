@@ -34,6 +34,7 @@ exports.readTextFile = function(fileFullPath) {
 }
 
 exports.writeNeidFile = function(neid) {
+    createDirSync(coolerCacheRootFolder);
     fs.writeFileSync(path.join(config.coolerCacheRootFolder, 'neid'), neid, { encoding: 'utf8' });
 }
 
@@ -70,6 +71,11 @@ exports.toDictionary = function(arr, keyFunc, valueFunc) {
     })
 
     return results;
+}
+
+// Very simple, specific implementation to OUR case:
+exports.toUnconfidentialUrl = function(url) {
+    return url.split('?')[0];
 }
 
 function createDirSync(dirPath) {

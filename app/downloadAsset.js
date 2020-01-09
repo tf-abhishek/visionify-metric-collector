@@ -75,9 +75,8 @@ function sendDataToTriggerBridge(client) {
             } catch (error) {
                 logger.error(`Error sending POP: ${error}`);
             }*/
-            
-            if (data) {
-                logger.info('Got some data from Ad-Platform.')
+            if (data !== adPlatformService.adPlatformNothingChanged) {
+                logger.info('Got a response from Ad-Platform. Will download and then send playlist to triggerBridge');
                 adPlatformService.downloadAndSaveAdPlatformAssets(data).then(
                     (emptyData) => {
                         client.sendOutputEvent(
@@ -85,10 +84,11 @@ function sendDataToTriggerBridge(client) {
                             new Message(JSON.stringify(data)),
                             printResultFor('Sent TriggerBridge assets'));
                             logger.info(`Sent AdPlatform JSON to TriggerBridge`);
-                    })
+                    });
             } else {
-                logger.info('Ad-Platform did not return any data, which means no changes since last call.')
+                logger.info('Looks like adPlatformData did not change since last time. Will take no action.');
             }
+            
             // In any case, schedule another call to Ad-Platform:
             setTimeout(() => { 
                 sendDataToTriggerBridge(client);
