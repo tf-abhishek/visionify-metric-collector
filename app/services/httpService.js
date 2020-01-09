@@ -8,8 +8,13 @@ const axios = require('axios').default;
 const retry = require('async-retry')
 let _neid = '';
 
-exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
-    await downloadIfModifiedSinceInternal(downloadUrl, assetFilename, directoryPathToSaveTo);
+exports.downloadAndSaveAssetsIfModifiedSince = async function (downloadUrl, assetFilename, directoryPathToSaveTo) {
+    await retry(async bail => {
+        await downloadIfModifiedSinceInternal(downloadUrl, assetFilename, directoryPathToSaveTo);
+    }, {
+        retries: 5,
+        onRetry: (err) => logger.warn(`Will retry error [${err}]`)
+    })
 }
 
 const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
@@ -35,11 +40,6 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
                     + ` Details: ${err}`);
             });
         });
-        /*const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
-        writeSteam.on('error', function (err) {
-            logger.info(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
-                + ` Details: ${err}`);
-        });*/
 
         // TODO: if error - put in a "poison" list to retry later/whenever.
         // TODO: When finished, compare filesize to the content-length header to verify image is complete
@@ -63,6 +63,8 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
         }
         else {
             if (error.code && error.code === 'ETIMEDOUT') {
+                logger.warn(`Got a network issue while downloading ${downloadUrl}: ${error}.`);
+                throw error;
                 // TODO: Handle broken download
             }
             logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
@@ -82,7 +84,7 @@ exports.getNEID = async function() {
 
 async function getNeidFromLocationApi(){
     let response;
-    return 'WBA-15196-000-C001';
+    return os.hostname() === 'cs-v04-000-0775' ? 'WBA-15196-000-C029' : 'WBA-15196-000-C001';
     try {
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
         logger.info(`Getting NEID for device from: ${neidUrl}`);
