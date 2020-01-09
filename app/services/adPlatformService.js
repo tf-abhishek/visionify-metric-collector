@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const axios = require('axios').default;
 
-const _storageLocalAdPlatformDataDir = _adPlatformConfig.storageLocalAdPlatformDataDir;
+const _storageLocalAdPlatformDataDir = _adPlatformConfig.coolerCacheRootFolder;
 const _adPlatformDataFilename = 'adPlatformData.json';
 const _fullDoorAdAssetTypeKey = 'FullDoorAd';
 const _middleBannerAssetTypeKey = 'MiddleBanner';

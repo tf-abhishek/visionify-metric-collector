@@ -8,7 +8,6 @@ const merchAppSocket = require('./services/merchAppSocket');
 var http = require('http');
 var static = require('node-static');
 var socketFailuresCounter = 0;
-var debugCounter = 0;
 //var coolerName = "WBA-16092-000-C012"
 
 
@@ -200,9 +199,8 @@ const coolerDataService = require('./services/coolerDataService');
 const getCoolerData = async function () {
     try {
         let coolerData = await coolerDataService.getCoolerData();
-debugCounter++;
 
-        if (coolerDataService.wasCoolerDataUpdated(coolerData) || debugCounter % 3 == 0) {
+        if (coolerDataService.wasCoolerDataUpdated(coolerData)) {
             logger.info(`coolerData was updated, will download assets and then send the file over to merchApp.`);
             await coolerDataService.downloadAndSaveAssets(coolerData);
             logger.info('Downloaded all coolerData assets');

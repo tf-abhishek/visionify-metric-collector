@@ -17,8 +17,8 @@ config.coolerCacheRootFolderDebug = './app/yo';
 config.merchAppListenPort = 2346;
 
 // Values to use:
-config.adPlatformFunctionCode = config.adPlatformFunctionCodeQA;
-config.adPlatformBaseUrl = config.adPlatformBaseUrlQA;
+config.adPlatformFunctionCode = config.adPlatformFunctionCodeProd;
+config.adPlatformBaseUrl = config.adPlatformBaseUrlProd;
 config.coolerCacheRootFolder = config.coolerCacheRootFolderProd;
 config.coolerCacheAssetsFolder = config.coolerCacheRootFolder + '/resources';
 config.storageLocalAdPlatformDataDir = config.coolerCacheAssetsFolder;

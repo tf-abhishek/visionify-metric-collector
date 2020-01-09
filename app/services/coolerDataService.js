@@ -6,7 +6,7 @@ const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
 const logger = require('./logger');
 
-const _coolerPath = `https://planogram-editor-api-qa.azurewebsites.net/api-docs/`   // TODO: CHANGE TO PROD
+const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
 const _productsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-haw/`
 const _tagsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-tags/`
 const _labelsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-labels/`
