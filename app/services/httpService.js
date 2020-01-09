@@ -5,14 +5,20 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const axios = require('axios').default;
+const retry = require('async-retry')
 let _neid = '';
 
 exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
+    await downloadIfModifiedSinceInternal(downloadUrl, assetFilename, directoryPathToSaveTo);
+}
+
+const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
     const assetFullPath = path.join(directoryPathToSaveTo, assetFilename);
     const fileLastModifiedTime = utils.getFileLastModifiedTime(assetFullPath);
     const getHeaders = {
         'If-Modified-Since': fileLastModifiedTime
     };
+
     try {
         // Download the file:
         const response = await axios.get(downloadUrl, {
@@ -21,11 +27,19 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
         });
         logger.info(`Downloaded an asset from: [${downloadUrl}], will save it to: [${directoryPathToSaveTo}]`);
         // Save the file:
-        const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
+        await new Promise(resolve => {
+            const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
+            writeSteam.on('finish', resolve);
+            writeSteam.on('error', function (err) {
+                logger.info(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
+                    + ` Details: ${err}`);
+            });
+        });
+        /*const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
         writeSteam.on('error', function (err) {
             logger.info(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
                 + ` Details: ${err}`);
-        });
+        });*/
 
         // TODO: if error - put in a "poison" list to retry later/whenever.
         // TODO: When finished, compare filesize to the content-length header to verify image is complete
@@ -48,7 +62,10 @@ exports.downloadAndSaveAssetsIfModifiedSince = async function(downloadUrl, asset
             }
         }
         else {
-            logger.error(`Error getting and saving file from URL ${downloadUrl}: ${err}`);
+            if (error.code && error.code === 'ETIMEDOUT') {
+                // TODO: Handle broken download
+            }
+            logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
         }
     }
 }
@@ -65,6 +82,7 @@ exports.getNEID = async function() {
 
 async function getNeidFromLocationApi(){
     let response;
+    return 'WBA-15196-000-C001';
     try {
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
         logger.info(`Getting NEID for device from: ${neidUrl}`);
@@ -88,7 +106,7 @@ async function getNeidFromLocationApi(){
         logger.warning(`Returned data from NEID query had more than one results: [${response.data}]. Returning first`);
     }
 
-    const neid = 'WBA-15196-000-C001'; //'WBA-13827-000-C016'//response.data.data.assets[0].neid;
+    const neid = 'WBA-15196-000-C002'; //'WBA-13827-000-C016'//response.data.data.assets[0].neid;
     logger.info(`Got NEID for the device: ${neid}.`); //Whole response: [${JSON.stringify(response.data)}]. hostname: ${os.hostname()}`);
 
     return neid;
