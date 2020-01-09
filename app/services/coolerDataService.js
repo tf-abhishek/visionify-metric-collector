@@ -14,12 +14,10 @@ const _imageFileExtension = 'png';
 const _productsAssetKey = 'products';
 const _labelsAssetKey = 'labels';
 const _tagsAssetKey = 'tags';
-const _storageLocalCoolerCacheRootDir = config.coolerCacheRootFolder;
-const _storageLocalProductsImagesDir = path.join(config.coolerCacheRootFolder, _productsAssetKey);
-const _storageLocalTagsImagesDir = path.join(config.coolerCacheRootFolder, _tagsAssetKey);
-const _storageLocalLabelsImagesDir = path.join(config.coolerCacheRootFolder, _labelsAssetKey);
-const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);
-const coolerDataWindowPrependPrefix = 'window.coolerData=';
+const _storageLocalProductsImagesDir = path.join(config.coolerCacheAssetsFolder, _productsAssetKey);
+const _storageLocalTagsImagesDir = path.join(config.coolerCacheAssetsFolder, _tagsAssetKey);
+const _storageLocalLabelsImagesDir = path.join(config.coolerCacheAssetsFolder, _labelsAssetKey);
+const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);  // Outside assets folder!
 var _assetCategoryToDirectoryDictionary = undefined;
 
 exports.getCoolerData = async function () {
@@ -111,11 +109,7 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
     }
     for (const imageFilename of imageCollection) {
         const fileUrl = `${baseUrl}${imageFilename}`;
-        if (imageFilename === '18685200024_C1C1.png' || imageFilename === '18685200024_C1C1_SINGLE.png') { 
-            logger.info(`Hahahaahahahahahahaahha, ${imageFilename}`); 
-        } else {
-            await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
-        }
+        await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
     }
 }
 

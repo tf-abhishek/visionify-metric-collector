@@ -48,7 +48,7 @@ exports.createDirectoriesForAssetsSync = function(...directories) {
 }
 
 exports.isArray = function (arr) {
-    return Array.isArray(arr) && arr.length;
+    return Array.isArray(arr);// && arr.length;
 }
 
 exports.isEmptyArray = function (arr) {

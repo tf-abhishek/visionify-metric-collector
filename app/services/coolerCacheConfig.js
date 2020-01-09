@@ -11,15 +11,16 @@ config.adPlatformBaseUrlProd = 'https://prod-ad-func.azurewebsites.net/api/exter
 config.NeidQueryAddress = 'https://location-manager-api.azurewebsites.net/api/assets/GetData?hostname=';
 
 config.coolerCacheRootFolderProd = '/home/csiadmin/coolerCache';
-config.coolerCacheRootFolderDebug = './app/yo/';
+config.coolerCacheRootFolderDebug = './app/yo';
 
 //config.screenNEIDPath = './app/screenNameFile';
 config.merchAppListenPort = 2346;
 
 // Values to use:
-config.adPlatformFunctionCode = config.adPlatformFunctionCodeProd;
-config.adPlatformBaseUrl = config.adPlatformBaseUrlProd;
+config.adPlatformFunctionCode = config.adPlatformFunctionCodeQA;
+config.adPlatformBaseUrl = config.adPlatformBaseUrlQA;
 config.coolerCacheRootFolder = config.coolerCacheRootFolderProd;
-config.storageLocalAdPlatformDataDir = config.coolerCacheRootFolder;// + '/adPlatform/';
+config.coolerCacheAssetsFolder = config.coolerCacheRootFolder + '/resources';
+config.storageLocalAdPlatformDataDir = config.coolerCacheAssetsFolder;
 
 module.exports = config;
