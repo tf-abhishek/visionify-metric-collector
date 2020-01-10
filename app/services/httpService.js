@@ -84,7 +84,11 @@ exports.getNEID = async function() {
 
 async function getNeidFromLocationApi(){
     let response;
-    //return os.hostname() === 'cs-v04-000-0775' ? 'WBA-15196-000-C003' : 'WBA-15196-000-C001';
+    const hostName = os.hostname();
+    if (hostName === 'cs-v04-000-1265') return 'WBA-15196-000-C002';
+    if (hostName === 'cs-v04-000-0775') return 'WBA-15196-000-C003';
+    if (hostName === 'cs-v04-000-1527') return 'WBA-15196-000-C002';
+    
     try {
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
         logger.info(`Getting NEID for device from: ${neidUrl}`);
@@ -108,7 +112,7 @@ async function getNeidFromLocationApi(){
         logger.warning(`Returned data from NEID query had more than one results: [${response.data}]. Returning first`);
     }
 
-    const neid = response.data.data.assets[0].neid;
+    const neid = response.data.data.assets[0].screen;
     logger.info(`Got NEID for the device: ${neid}.`); //Whole response: [${JSON.stringify(response.data)}]. hostname: ${os.hostname()}`);
 
     return neid;
