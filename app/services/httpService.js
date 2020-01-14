@@ -42,13 +42,15 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
         });
 
         const contentLength = response.headers['content-length'];
+        const filesize = utils.getFilesizeInBytes(assetFullPath)
         if (!contentLength) {
             logger.warning(`No content length received for ${utils.toUnconfidentialUrl(downloadUrl)}. Cannot verify completeness.`);
-        } else if (utils.getFilesizeInBytes(assetFullPath) !== contentLength) {
-            throw new Error(`Content length and filesize are different. Will retry download.`);
+        } else if (`${filesize}` !== contentLength) {
+            throw new Error(`Content length [${contentLength}] and filesize [${filesize}] are different. Will retry download.`);
+        } else {
+            logger.info(`Successfully verified saved file under ${assetFullPath}.`);
         }
         // TODO: if error - put in a "poison" list to retry later/whenever.
-        // TODO: When finished, compare filesize to the content-length header to verify image is complete
     }
     catch (error) {
         if (error && error.response) { // HTTP error
@@ -68,6 +70,9 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
             }
         }
         else {
+            if (error.message.startsWith('Content length')) {
+                throw error;
+            }
             if (error.code && error.code === 'ETIMEDOUT') {
                 logger.warn(`Got a network issue while downloading ${downloadUrl}: ${error}.`);
                 throw error;
