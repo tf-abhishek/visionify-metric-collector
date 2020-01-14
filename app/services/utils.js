@@ -47,6 +47,13 @@ exports.createDirectoriesForAssetsSync = function(...directories) {
     directories.forEach(directory => createDirSync(directory));
 }
 
+exports.getFilesizeInBytes = function(filePathAndName) {
+    var stats = fs.statSync(filePathAndName);
+    var fileSizeInBytes = stats["size"];
+
+    return fileSizeInBytes;
+}
+
 exports.isArray = function (arr) {
     return Array.isArray(arr);// && arr.length;
 }

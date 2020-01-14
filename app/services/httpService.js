@@ -41,6 +41,12 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
             });
         });
 
+        const contentLength = response.headers['content-length'];
+        if (!contentLength) {
+            logger.warning(`No content length received for ${utils.toUnconfidentialUrl(downloadUrl)}. Cannot verify completeness.`);
+        } else if (utils.getFilesizeInBytes(assetFullPath) !== contentLength) {
+            throw new Error(`Content length and filesize are different. Will retry download.`);
+        }
         // TODO: if error - put in a "poison" list to retry later/whenever.
         // TODO: When finished, compare filesize to the content-length header to verify image is complete
     }
@@ -68,15 +74,21 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
                 // TODO: Handle broken download
             }
             logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
+            fs.unlink(assetFullPath);
         }
     }
 }
 
 exports.getNEID = async function() {
     if (!_neid) {
-        _neid = await getNeidFromLocationApi();
+        try {
+            _neid = await getNeidFromLocationApi();
+            
+            utils.writeNeidFile(_neid);
+        } catch (error) {
+            _neid = utils.readNeidFileIfExists();
+        }
         // For subsequent dockers initializations, write to file as a fallback for API calls issues
-        utils.writeNeidFile(_neid);
     }
 
     return _neid;
@@ -84,11 +96,7 @@ exports.getNEID = async function() {
 
 async function getNeidFromLocationApi(){
     let response;
-    const hostName = os.hostname();
-    if (hostName === 'cs-v04-000-1265') return 'WBA-15196-000-C002';
-    if (hostName === 'cs-v04-000-0775') return 'WBA-15196-000-C003';
-    if (hostName === 'cs-v04-000-1527') return 'WBA-15196-000-C002';
-    
+
     try {
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
         logger.info(`Getting NEID for device from: ${neidUrl}`);
