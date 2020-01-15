@@ -74,9 +74,13 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
 
 exports.getNEID = async function() {
     if (!_neid) {
-        _neid = await getNeidFromLocationApi();
-        // For subsequent dockers initializations, write to file as a fallback for API calls issues
-        utils.writeNeidFile(_neid);
+        try {
+            _neid = await getNeidFromLocationApi();
+            
+            utils.writeNeidFile(_neid);
+        } catch (error) {
+            _neid = utils.readNeidFileIfExists();
+        }
     }
 
     return _neid;
@@ -84,10 +88,6 @@ exports.getNEID = async function() {
 
 async function getNeidFromLocationApi(){
     let response;
-    const hostName = os.hostname();
-    if (hostName === 'cs-v04-000-1265') return 'WBA-15196-000-C002';
-    if (hostName === 'cs-v04-000-0775') return 'WBA-15196-000-C003';
-    if (hostName === 'cs-v04-000-1527') return 'WBA-15196-000-C002';
     
     try {
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
