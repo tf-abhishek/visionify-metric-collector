@@ -17,6 +17,8 @@ config.coolerCacheRootFolderDebug = './app/yo';
 config.merchAppListenPort = 2346;
 
 // Values to use:
+config.intervalForCoolerDataDownloadMs = process.env.coolercacheintervalms || 10 * 60 * 1000; // 10 minutes is default
+config.intervalForAdPlatformDownloadMs = process.env.adplatformintervalms || 30 * 60 * 1000; // 30 minutes is default
 config.adPlatformFunctionCode = config.adPlatformFunctionCodeProd;
 config.adPlatformBaseUrl = config.adPlatformBaseUrlProd;
 config.coolerCacheRootFolder = config.coolerCacheRootFolderProd;

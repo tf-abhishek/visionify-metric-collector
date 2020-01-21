@@ -13,8 +13,8 @@ var socketFailuresCounter = 0;
 
 // IOT HUB MESSANGE BROKER
 
-const getAdPlatformIntervalInMs = 60 * 1000;//60 * 60 * 1000;   // 1 Hour
-const getCoolerDataIntervalInMs = 60 * 1000;        // 1 Minute
+const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
+const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
 const socketInitRetryThreshold = 10;        // If we failed for 10 times, do not retry anymore
 const Transport = require('azure-iot-device-mqtt').Mqtt;
@@ -22,7 +22,7 @@ const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
 
-initializeListenerToMerchApp();
+//initializeListenerToMerchApp();
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
@@ -205,7 +205,7 @@ const getCoolerData = async function () {
             await coolerDataService.downloadAndSaveAssets(coolerData);
             logger.info('Downloaded all coolerData assets');
 
-            merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+            //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
         } else {
             logger.info('Got coolerData, however it was not modified since last time, so no further actions will be taken');
