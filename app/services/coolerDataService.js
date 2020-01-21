@@ -21,6 +21,14 @@ const retailerToProductsUrlMap = {
     'WBA': 'https://coolerassets.blob.core.windows.net/planogram-images-haw/',
     'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/'
 };
+const retailerToCoolerDataUrlMap = {
+    'WBA': 'https://planogram-editor-api.azurewebsites.net/screens/',
+    'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
+}
+const retailerToCoolerDataUrlSuffixMap = {
+    'WBA': '',
+    'LCL': '/planomap'
+}
 var _assetCategoryToDirectoryDictionary = undefined;
 var _neid;
 
@@ -88,12 +96,6 @@ exports.downloadAndSaveAssets = async function (coolerData) {
     }
 }
 
-const getCoolerDataUrl = async function () {
-    _neid = await httpService.getNEID();
-
-    return `${_coolerPath}${_neid}`;
-}
-
 async function getNeid() {
     if (!_neid) {
         _neid = await httpService.getNEID();    
@@ -116,14 +118,28 @@ async function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
 
 async function getProductImagesUrl() {
     const neid = await getNeid();
+
+    return getFromDictionary(neid, retailerToProductsUrlMap, "product assets");
+}
+
+async function getCoolerDataUrl() {
+    const neid = await getNeid();
+
+    const coolerDataUrl = getFromDictionary(neid, retailerToCoolerDataUrlMap, "coolerData");
+    const coolerDataUrlSuffix = getFromDictionary(neid, retailerToCoolerDataUrlSuffixMap, "coolerData");
+    
+    return `${coolerDataUrl}${neid}${coolerDataUrlSuffix}`;
+}
+
+function getFromDictionary(neid, dictionary, queryTarget) {
     let retailer = neid.split('-')[0];
 
-    if (!(retailer in retailerToProductsUrlMap)) {
-        logger.error(`Could not derive retailer from NEID ${neid} in order to query product assets. Will default to ${config.defaultStore}`);
+    if (!(retailer in dictionary)) {
+        logger.error(`Could not derive retailer from NEID ${neid} in order to query ${queryTarget}. Will default to ${config.defaultStore}`);
         retailer = config.defaultStore;
     }
 
-    return retailerToProductsUrlMap[retailer];
+    return dictionary[retailer];
 }
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection) {
