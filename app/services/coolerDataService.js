@@ -7,7 +7,6 @@ const httpService = require('./httpService');
 const logger = require('./logger');
 
 const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
-const _productsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-haw/`
 const _tagsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-tags/`
 const _labelsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-labels/`
 const _imageFileExtension = 'png';
@@ -18,7 +17,12 @@ const _storageLocalProductsImagesDir = path.join(config.coolerCacheAssetsFolder,
 const _storageLocalTagsImagesDir = path.join(config.coolerCacheAssetsFolder, _tagsAssetKey);
 const _storageLocalLabelsImagesDir = path.join(config.coolerCacheAssetsFolder, _labelsAssetKey);
 const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);  // Outside assets folder!
+const retailerToProductsUrlMap = { 
+    'WBA': 'https://coolerassets.blob.core.windows.net/planogram-images-haw/',
+    'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/'
+};
 var _assetCategoryToDirectoryDictionary = undefined;
+var _neid;
 
 exports.getCoolerData = async function () {
     logger.info(`Getting coolerData.`);
@@ -70,7 +74,7 @@ exports.downloadAndSaveAssets = async function (coolerData) {
     createDirectoriesForAssets();
 
     const allImagesDictionary = getAllDirsToFilenamesDictionary(coolerData);
-    const assetCategoryToDirectoryAndBaseUrlDictionary = getAssetCategoryToDirectoryAndBaseUrlDictionary();
+    const assetCategoryToDirectoryAndBaseUrlDictionary = await getAssetCategoryToDirectoryAndBaseUrlDictionary();
 
     for (var assetCategory in allImagesDictionary) {
         // check if the property/key is defined in the object itself, not in parent
@@ -85,20 +89,41 @@ exports.downloadAndSaveAssets = async function (coolerData) {
 }
 
 const getCoolerDataUrl = async function () {
-    const neid = await httpService.getNEID();
+    _neid = await httpService.getNEID();
 
-    return `${_coolerPath}${neid}`;
+    return `${_coolerPath}${_neid}`;
 }
 
-function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
+async function getNeid() {
+    if (!_neid) {
+        _neid = await httpService.getNEID();    
+    }
+
+    return _neid;
+}
+
+async function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
     if (_assetCategoryToDirectoryDictionary !== undefined) return _assetCategoryToDirectoryDictionary;
     _assetCategoryToDirectoryDictionary = {};
 
-    _assetCategoryToDirectoryDictionary[_productsAssetKey] = [_storageLocalProductsImagesDir, _productsImagesUrl];
+    const productImagesUrl = await getProductImagesUrl();
+    _assetCategoryToDirectoryDictionary[_productsAssetKey] = [_storageLocalProductsImagesDir, productImagesUrl];
     _assetCategoryToDirectoryDictionary[_labelsAssetKey] = [_storageLocalLabelsImagesDir, _labelsImagesUrl];
     _assetCategoryToDirectoryDictionary[_tagsAssetKey] = [_storageLocalTagsImagesDir, _tagsImagesUrl];
 
     return _assetCategoryToDirectoryDictionary;
+}
+
+async function getProductImagesUrl() {
+    const neid = await getNeid();
+    let retailer = neid.split('-')[0];
+
+    if (!(retailer in retailerToProductsUrlMap)) {
+        logger.error(`Could not derive retailer from NEID ${neid} in order to query product assets. Will default to ${config.defaultStore}`);
+        retailer = config.defaultStore;
+    }
+
+    return retailerToProductsUrlMap[retailer];
 }
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection) {
