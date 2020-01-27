@@ -5,6 +5,7 @@ const fs = require('fs');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
 const logger = require('./logger');
+const retry = require('async-retry')
 
 const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
 const _tagsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-tags/`
@@ -33,10 +34,17 @@ var _assetCategoryToDirectoryDictionary = undefined;
 var _neid;
 
 exports.getCoolerData = async function () {
-    logger.info(`Getting coolerData.`);
-    const coolerDataResponse = await axios.get(await getCoolerDataUrl());
+    let coolerDataResponse;
 
-    return coolerDataResponse.data;
+    await retry(async bail => {
+        logger.info(`Getting coolerData.`);
+        coolerDataResponse = await axios.get(await getCoolerDataUrl());
+    }, {
+        retries: 5,
+        onRetry: (err) => logger.warn(`Will retry error [${err}]`)
+    });
+
+    return coolerDataResponse ? coolerDataResponse.data : '';
 }
 
 exports.saveCoolerDataToDisk = function (coolerData) {
