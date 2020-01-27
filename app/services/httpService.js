@@ -59,6 +59,7 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
             else {
                 logger.error(`HTTP ${error.response.status} error when trying to 
                 get ${downloadUrl}: [${error.response.statusText}]`);
+                throw error;
             }
         }
         else {
@@ -68,6 +69,7 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
                 // TODO: Handle broken download
             }
             logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
+            throw error;
         }
     }
 }

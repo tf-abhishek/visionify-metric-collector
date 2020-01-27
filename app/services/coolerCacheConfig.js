@@ -11,7 +11,7 @@ config.adPlatformBaseUrlProd = 'https://prod-ad-func.azurewebsites.net/api/exter
 config.NeidQueryAddress = 'https://location-manager-api.azurewebsites.net/api/assets/GetData?hostname=';
 
 config.coolerCacheRootFolderProd = '/home/csiadmin/coolerCache';
-config.coolerCacheRootFolderDebug = './app/yo';
+config.coolerCacheRootFolderDebug = './app/yo'; 
 
 //config.screenNEIDPath = './app/screenNameFile';
 config.merchAppListenPort = 2346;
