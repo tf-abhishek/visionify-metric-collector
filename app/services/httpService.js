@@ -49,7 +49,7 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
             throw new Error(`Content length [${contentLength}] and filesize [${filesize}] are different. Will retry download.`);
         } else {
             logger.info(`Successfully verified saved file under ${assetFullPath}.`);
-            logger.alert(`#Downloaded and saved ${filesize} bytes.`);
+            logger.info(`#Downloaded and saved ${filesize} bytes.`);
         }
         // TODO: if error - put in a "poison" list to retry later/whenever.
     }
