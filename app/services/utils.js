@@ -66,6 +66,31 @@ exports.isNonEmptyArray = function (arr) {
     return Array.isArray(arr) && arr.length && arr.length > 0;
 }
 
+exports.toDistinctDictionary = function(arr, keyFunc, valueFunc) {
+    let results = {};
+    const distinctArr = [...new Set(arr,)];
+
+    /*var ocurred = {};
+    const distinctArr = arr.filter(entry => {
+        if (ocurred[keyFunc(entry)]) {
+            return false;
+        }
+        ocurred[keyFunc(entry)] = true;
+
+        return true;
+    });*/
+
+    distinctArr.forEach(element => {
+        if (results[keyFunc(element)]) {
+            logger.warning(`Element with key ${keyFunc(element)} already exists in the dictionary. This shouldn't happen in a distinct array.`);
+        } else {
+            results[keyFunc(element)] = valueFunc(element);
+        }
+    })
+
+    return results;
+}
+
 exports.toDictionary = function(arr, keyFunc, valueFunc) {
     let results = {};
 

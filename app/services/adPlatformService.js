@@ -66,7 +66,7 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
             logger.error(`Error: Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
             return;
         }
-        const assetsToSave = utils.toDictionary(campaign.Assets.filter(asset => asset.SasLink && asset.FileName),
+        const assetsToSave = utils.toDistinctDictionary(campaign.Assets.filter(asset => asset.SasLink && asset.FileName),
             asset => asset.FileName, asset => asset.SasLink);
 
         createDirectoriesForAssets();

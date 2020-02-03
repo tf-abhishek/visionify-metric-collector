@@ -147,7 +147,7 @@ function getFromDictionary(neid, dictionary, queryTarget) {
         retailer = config.defaultStore;
     }
 
-    logger.info(`Cooler Data will be retrieved for retailer: ${retailer}.`)
+    //logger.info(`Cooler Data will be retrieved for retailer: ${retailer}.`)
     return dictionary[retailer];
 }
 
