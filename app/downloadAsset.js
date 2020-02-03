@@ -51,7 +51,7 @@ function initializeListenerToMerchApp() {
         merchAppSocket.initialize();
     } catch (error) {
         socketFailuresCounter++;
-        logger.warning(`Failed to open a socket for merchApp communication on port ${merchAppSocket.listeningPort}`);
+        logger.warn(`Failed to open a socket for merchApp communication on port ${merchAppSocket.listeningPort}`);
         if (socketFailuresCounter < socketInitRetryThreshold) {
             setInterval(() => {
                 initializeListenerToMerchApp();

@@ -82,7 +82,7 @@ exports.toDistinctDictionary = function(arr, keyFunc, valueFunc) {
 
     distinctArr.forEach(element => {
         if (results[keyFunc(element)]) {
-            logger.warning(`Element with key ${keyFunc(element)} already exists in the dictionary. This shouldn't happen in a distinct array.`);
+            logger.warn(`Element with key ${keyFunc(element)} already exists in the dictionary. This shouldn't happen in a distinct array.`);
         } else {
             results[keyFunc(element)] = valueFunc(element);
         }

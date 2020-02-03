@@ -44,7 +44,7 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
         const contentLength = response.headers['content-length'];
         const filesize = utils.getFilesizeInBytes(assetFullPath)
         if (!contentLength) {
-            logger.warning(`No content length received for ${utils.toUnconfidentialUrl(downloadUrl)}. Cannot verify completeness.`);
+            logger.warn(`No content length received for ${utils.toUnconfidentialUrl(downloadUrl)}. Cannot verify completeness.`);
         } else if (`${filesize}` !== contentLength) {
             throw new Error(`Content length [${contentLength}] and filesize [${filesize}] are different. Will retry download.`);
         } else {
@@ -126,7 +126,7 @@ async function getNeidFromLocationApi(){
     }
 
     if (response.data.data.assets.length > 1) {
-        logger.warning(`Returned data from NEID query had more than one results: [${response.data}]. Returning first`);
+        logger.warn(`Returned data from NEID query had more than one results: [${response.data}]. Returning first`);
     }
 
     const neid = response.data.data.assets[0].screen;
