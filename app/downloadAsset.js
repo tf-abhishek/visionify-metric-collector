@@ -22,7 +22,7 @@ const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
 
-//initializeListenerToMerchApp();
+initializeListenerToMerchApp();
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
@@ -53,6 +53,7 @@ function initializeListenerToMerchApp() {
         socketFailuresCounter++;
         logger.warn(`Failed to open a socket for merchApp communication on port ${merchAppSocket.listeningPort}`);
         if (socketFailuresCounter < socketInitRetryThreshold) {
+            logger.info('Retrying to initialize listener socket for merchApp.');
             setInterval(() => {
                 initializeListenerToMerchApp();
             }, socketListenerInterval * socketFailuresCounter);
@@ -196,6 +197,17 @@ Array.prototype.extend = function (other_array) {
 
 const coolerDataService = require('./services/coolerDataService');
 
+const tempSendCoolerDataToMerchApp = async function() {
+    console.log('Will get cooler data again grrr');
+    const coolerData = await coolerDataService.getCoolerData();
+    console.log('Will send cooler data to merchapp');
+    merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+
+    setTimeout(() => {
+        tempSendCoolerDataToMerchApp();
+    }, 1000 * 60);
+}
+
 const getCoolerData = async function () {
     try {
         let coolerData = await coolerDataService.getCoolerData();
@@ -205,9 +217,11 @@ const getCoolerData = async function () {
             await coolerDataService.downloadAndSaveAssets(coolerData);
             logger.info('Downloaded all coolerData assets');
 
-            //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
+            tempSendCoolerDataToMerchApp();
+            //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
         } else {
+            tempSendCoolerDataToMerchApp();
             logger.info('Got coolerData, however it was not modified since last time, so no further actions will be taken');
         }
     } catch (error) {
