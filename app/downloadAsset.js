@@ -197,15 +197,20 @@ Array.prototype.extend = function (other_array) {
 
 const coolerDataService = require('./services/coolerDataService');
 
+var _prevCoolerData = '';
 const tempSendCoolerDataToMerchApp = async function() {
     console.log('Will get cooler data again grrr');
     const coolerData = await coolerDataService.getCoolerData();
-    console.log('Will send cooler data to merchapp');
-    merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+    if (coolerData !== _prevCoolerData) {
+        console.log('Will send cooler data to merchapp');
+        merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+
+        _prevCoolerData = coolerData;
+    }
 
     setTimeout(() => {
         tempSendCoolerDataToMerchApp();
-    }, 1000 * 60);
+    }, 1000 * 5);
 }
 
 const getCoolerData = async function () {
