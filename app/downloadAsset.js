@@ -201,18 +201,21 @@ var _prevCoolerData = '';
 const tempSendCoolerDataToMerchApp = async function() {
     console.log('Will get cooler data again grrr');
     const coolerData = await coolerDataService.getCoolerData();
-    if (coolerData !== _prevCoolerData) {
+    
+    if (JSON.stringify(coolerData) !== JSON.stringify(_prevCoolerData)) {
         console.log('Will send cooler data to merchapp');
         merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
 
         _prevCoolerData = coolerData;
+    } else {
+        console.log('NO CHANGES OKAYYY??');
     }
 
     setTimeout(() => {
         tempSendCoolerDataToMerchApp();
     }, 1000 * 5);
 }
-
+var onlyOnce = 0;
 const getCoolerData = async function () {
     try {
         let coolerData = await coolerDataService.getCoolerData();
@@ -223,10 +226,16 @@ const getCoolerData = async function () {
             logger.info('Downloaded all coolerData assets');
 
             coolerDataService.saveCoolerDataToDisk(coolerData);
-            tempSendCoolerDataToMerchApp();
+            if (onlyOnce < 1) {
+                tempSendCoolerDataToMerchApp();
+                onlyOnce++;
+            }
             //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
         } else {
-            tempSendCoolerDataToMerchApp();
+            if (onlyOnce < 1) {
+                tempSendCoolerDataToMerchApp();
+                onlyOnce++;
+            }
             logger.info('Got coolerData, however it was not modified since last time, so no further actions will be taken');
         }
     } catch (error) {
