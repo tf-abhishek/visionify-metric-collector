@@ -15,25 +15,44 @@ variables:
   containerRegistry: 'csicontainers.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
+  major: 0
+  minor: 0
   
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
 
 stages:
+
+- stage:
+  displayName: Build_dev_Version_Number
+  jobs:
+  - job: Build_dev_Version_Number
+    variables:
+       patch: $[counter(variables['minor'], 0)]
+    steps:
+      - bash: |
+           echo "##vso[build.updatebuildnumber]$(major).$(minor).$(patch)"
+        name: SetDevBuildName
+
 - stage: Build
   displayName: Build and push stage
   jobs:  
   - job: Build
+    variables:
+        patch: $[counter(variables['minor'], 0)]
     displayName: Build
     pool:
       vmImage: $(vmImageName)
     steps:
-    - task: Docker@2
-      displayName: Build and push an image to container registry
-      inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+      - bash: |
+           echo "##vso[build.updatebuildnumber]$(major).$(minor).$(patch)"
+        name: SetDevBuildName
+      - task: Docker@2
+        displayName: Build and push an image to container registry
+        inputs:
+          command: buildAndPush
+          repository: $(imageRepository)
+          dockerfile: $(dockerfilePath)
+          containerRegistry: $(dockerRegistryServiceConnection)
+          tags: |
+            $(major).$(minor).$(patch)-amd64
