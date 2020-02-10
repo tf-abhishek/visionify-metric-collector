@@ -85,7 +85,7 @@ exports.wasCoolerDataUpdated = function (currentCoolerData) {
     return previousCoolerData.toLocaleLowerCase() !== JSON.stringify(currentCoolerData).toLocaleLowerCase();
 }
 
-exports.downloadAndSaveAssets = async function (coolerData) {
+exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloadAnyway = true) {
     // Just in case the dir is not there yet - create it so we won't face problems saving downloaded files.
     createDirectoriesForAssets();
 
@@ -99,7 +99,7 @@ exports.downloadAndSaveAssets = async function (coolerData) {
             const assetDirectoryPath = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][0];
             const assetBaseUrl = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][1];
 
-            await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection);
+            await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway);
         }
     }
 }
@@ -151,15 +151,23 @@ function getFromDictionary(neid, dictionary, queryTarget) {
     return dictionary[retailer];
 }
 
-async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection) {
+async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection, forceDownloadAnyway) {
     if (!directoryToSaveTo || !baseUrl) {
         logger.error(`Cannot download asset since either the directory to save to or the base Url is empty;
          baseUrl: [${baseUrl}], directoryToSaveTo: [${directoryToSaveTo}]`);
         return;
     }
     for (const imageFilename of imageCollection) {
-        const fileUrl = `${baseUrl}${imageFilename}`;
-        await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
+        if (forceDownloadAnyway || !fs.existsSync(path.join(directoryToSaveTo, imageFilename))) {
+            const fileUrl = `${baseUrl}${imageFilename}`;
+            if (!forceDownloadAnyway) {
+                logger.info(`Noticed a file that was not downloaded in previous cycle: ${imageFilename}, will download again`);
+            }
+
+            await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
+        } else {
+            //logger.info(`Asset`)
+        }
     }
 }
 
