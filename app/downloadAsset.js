@@ -202,14 +202,16 @@ const getCoolerData = async function () {
 
         if (coolerDataService.wasCoolerDataUpdated(coolerData)) {
             logger.info(`coolerData was updated, will download assets and then send the file over to merchApp.`);
-            await coolerDataService.downloadAndSaveAssets(coolerData);
+            await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData);
             logger.info('Downloaded all coolerData assets');
 
             //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
         } else {
-            logger.info('Got coolerData, however it was not modified since last time, so no further actions will be taken');
+            logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
+            await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
         }
+
     } catch (error) {
         const stack = error.stack ? error.stack.split("\n") : '';
         logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
