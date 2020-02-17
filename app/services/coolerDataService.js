@@ -92,6 +92,7 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
     const allImagesDictionary = getAllDirsToFilenamesDictionary(coolerData);
     const assetCategoryToDirectoryAndBaseUrlDictionary = await getAssetCategoryToDirectoryAndBaseUrlDictionary();
 
+    let downloaded = false;
     for (var assetCategory in allImagesDictionary) {
         // check if the property/key is defined in the object itself, not in parent
         if (allImagesDictionary.hasOwnProperty(assetCategory)) {
@@ -99,9 +100,11 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
             const assetDirectoryPath = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][0];
             const assetBaseUrl = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][1];
 
-            await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway);
+            downloaded = downloaded || await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway);
         }
     }
+
+    return downloaded;
 }
 
 async function getNeid() {
@@ -152,24 +155,27 @@ function getFromDictionary(neid, dictionary, queryTarget) {
 }
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection, forceDownloadAnyway) {
+    let downloaded = false;
     if (!directoryToSaveTo || !baseUrl) {
         logger.error(`Cannot download asset since either the directory to save to or the base Url is empty;
          baseUrl: [${baseUrl}], directoryToSaveTo: [${directoryToSaveTo}]`);
-        return;
+        return false;
     }
     for (const imageFilename of imageCollection) {
         if (forceDownloadAnyway || shouldRedownloadFile(directoryToSaveTo, imageFilename)) {
             const fileUrl = `${baseUrl}${imageFilename}`;
             if (!forceDownloadAnyway) {
-                logger.info(`Noticed a file that was not downloaded in previous cycle: ${imageFilename}, will download again`);
+                logger.info(`Noticed a file that was not fully downloaded in previous cycle: ${imageFilename}, will download again`);
             }
 
             const shouldUseIfModifiedSince = forceDownloadAnyway;
-            await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince);
+            downloaded = downloaded || await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince);
         } else {
             //logger.info(`Asset`)
         }
     }
+
+    return downloaded;
 }
 
 function shouldRedownloadFile(directoryToSaveTo, assetFileName) {
