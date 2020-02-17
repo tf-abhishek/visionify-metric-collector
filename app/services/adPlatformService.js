@@ -74,7 +74,7 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
             if (assetsToSave.hasOwnProperty(assetFilename)) {
                 const assetUrl = assetsToSave[assetFilename];
 
-                await  httpService.downloadAndSaveAssetsIfModifiedSince(assetUrl, assetFilename, dirToSaveTo);
+                await  httpService.downloadAndSaveAsset(assetUrl, assetFilename, dirToSaveTo);
             }
         }
     };

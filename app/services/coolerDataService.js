@@ -158,16 +158,42 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
         return;
     }
     for (const imageFilename of imageCollection) {
-        if (forceDownloadAnyway || !fs.existsSync(path.join(directoryToSaveTo, imageFilename))) {
+        if (forceDownloadAnyway || shouldRedownloadFile(directoryToSaveTo, imageFilename)) {
             const fileUrl = `${baseUrl}${imageFilename}`;
             if (!forceDownloadAnyway) {
                 logger.info(`Noticed a file that was not downloaded in previous cycle: ${imageFilename}, will download again`);
             }
 
-            await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
+            const shouldUseIfModifiedSince = forceDownloadAnyway;
+            await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince);
         } else {
             //logger.info(`Asset`)
         }
+    }
+}
+
+function shouldRedownloadFile(directoryToSaveTo, assetFileName) {
+    const assetFullPath = path.join(directoryToSaveTo, assetFileName);
+    
+    return !fs.existsSync(assetFullPath) || isFilePartial(assetFullPath);
+}
+
+function isFilePartial(assetFullPath) {
+    const fileRealSize = utils.getFilesizeInBytes(assetFullPath);
+    const fileExpectedSize = getFileExpectedSize(`${assetFullPath}.size`);
+    
+    return `${fileRealSize}` !== fileExpectedSize
+}
+
+function getFileExpectedSize(filePath) {
+    try {
+        const fileExpectedSize = fs.readFileSync(filePath);
+        
+        return fileExpectedSize.toString('utf-8');
+    } catch (error) {
+        logger.warn(`Could not get expected asset size for file [${filePath}]. Will treat it as a partial file and redownload.`);
+        
+        return '0';
     }
 }
 
