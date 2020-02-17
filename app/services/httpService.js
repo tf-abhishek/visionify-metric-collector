@@ -87,7 +87,11 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
                 // TODO: Handle broken download
             }
             logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
-            fs.unlink(assetFullPath);
+            fs.unlink(assetFullPath, err => {
+                if (err) {
+                    logger.warn(`Could not unlink erratic file from download-url [${downloadUrl}]. Details: [${err}]`);
+                }
+            });
             
             throw error;
         }
