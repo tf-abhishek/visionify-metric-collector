@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const fileRecoveryUtils = require('./fileRecoveryUtils');
 const path = require('path');
 const axios = require('axios').default;
 const fs = require('fs');
@@ -158,7 +159,7 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
         return;
     }
     for (const imageFilename of imageCollection) {
-        if (forceDownloadAnyway || shouldRedownloadFile(directoryToSaveTo, imageFilename)) {
+        if (forceDownloadAnyway || fileRecoveryUtils.shouldRedownloadFile(directoryToSaveTo, imageFilename)) {
             const fileUrl = `${baseUrl}${imageFilename}`;
             if (!forceDownloadAnyway) {
                 logger.info(`Noticed a file that was not downloaded in previous cycle: ${imageFilename}, will download again`);
@@ -171,7 +172,7 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
         }
     }
 }
-
+/*
 function shouldRedownloadFile(directoryToSaveTo, assetFileName) {
     const assetFullPath = path.join(directoryToSaveTo, assetFileName);
     
@@ -195,7 +196,7 @@ function getFileExpectedSize(filePath) {
         
         return '0';
     }
-}
+}*/
 
 function createDirectoriesForAssets() {
     utils.createDirectoriesForAssetsSync(_storageLocalProductsImagesDir,

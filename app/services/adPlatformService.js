@@ -2,6 +2,7 @@ const _adPlatformConfig = require('./coolerCacheConfig');
 const utils = require('./utils');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
+const fileRecoveryUtils = require('./fileRecoveryUtils');
 const logger = require('./logger');
 const path = require('path');
 const fs = require('fs');
@@ -38,7 +39,7 @@ let _firstAdPlatformServiceRun = true;
 
 exports.adPlatformNothingChanged = _adPlatformNothingChanged;
 
-exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
+exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData, forceDownload = true) {
     if (!adPlatformData || utils.isEmptyArray(adPlatformData)) {
         logger.info('Empty adPlatform data, nothing to download. Aborting.');
         return;
@@ -72,21 +73,27 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData) {
         createDirectoriesForAssets();
         for (var assetFilename in assetsToSave) {
             if (assetsToSave.hasOwnProperty(assetFilename)) {
-                const assetUrl = assetsToSave[assetFilename];
-
-                await  httpService.downloadAndSaveAsset(assetUrl, assetFilename, dirToSaveTo);
+                if (forceDownload || fileRecoveryUtils.shouldRedownloadFile(dirToSaveTo, assetFilename)) {
+                    const assetUrl = assetsToSave[assetFilename];
+                    if (!forceDownload) {
+                        logger.info(`Noticed an ad-platform asset that was not downloaded in previous cycle: ${assetFilename}, will download again`);
+                    }
+        
+                    const shouldUseIfModifiedSince = forceDownload;
+                    await httpService.downloadAndSaveAsset(assetUrl, assetFilename, dirToSaveTo, shouldUseIfModifiedSince);
+                }
             }
         }
     };
 }
 
-exports.getAdPlatformData = async function () {
+exports.getAdPlatformData = async function (forceDownload = false) {
 let adPlatformUrl;
 
     try {
         const adPlatformDataLastModified = utils.getFileLastModifiedTime(
             path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
-        const getHeaders = getAdPlatformRequestHeaders(adPlatformDataLastModified);
+        const getHeaders = forceDownload ? {} : getAdPlatformRequestHeaders(adPlatformDataLastModified);
         adPlatformUrl = await buildAdPlatformGetUrl();
 
         const adPlatformDataResponse = await axios.get(adPlatformUrl, {
@@ -116,6 +123,24 @@ let adPlatformUrl;
             logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`);
         }
     }
+}
+
+exports.readAdPlatformDataFromDiskSync = function () {
+    let fileFullPath = path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename);
+
+    return JSON.parse(utils.readTextFile(fileFullPath));
+}
+
+const readAdPlatformDataFromDisk = async function () {
+    let fileFullPath = path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename);
+    fs.readFile(fileFullPath, 'utf8', (err, data) => {
+        if (err) {
+            logger.error(`Could not read file from ${fileFullPath}. Details:${err}`);
+            return '';
+        }
+
+        return JSON.parse(data);
+    });
 }
 
 const getAdPlatformRequestHeaders = function(adPlatformDataLastModified) {
@@ -149,18 +174,6 @@ const buildAdPlatformGetUrl = async function () {
     const neid = await httpService.getNEID();
 
     return `${_adPlatformConfig.adPlatformBaseUrl}${neid}?code=${_adPlatformConfig.adPlatformFunctionCode}`;
-}
-
-const readAdPlatformDataFromDisk = async function () {
-    let fileFullPath = path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename);
-    fs.readFile(fileFullPath, 'utf8', (err, data) => {
-        if (err) {
-            logger.error(`Could not read file from ${fileFullPath}. Details:${err}`);
-            return;
-        }
-
-        return JSON.parse(data);
-    });
 }
 
 function createDirectoriesForAssets() {    

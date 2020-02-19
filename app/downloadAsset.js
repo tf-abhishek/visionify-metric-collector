@@ -83,7 +83,10 @@ function handleAdPlatform(client) {
                             logger.info(`Sent AdPlatform JSON to TriggerBridge`);
                     });
             } else {
-                logger.info('Looks like adPlatformData did not change since last time. Will take no action.');
+                logger.info('Looks like adPlatformData did not change since last time. Will just verify assets are in-place and complete.');
+                const adPlatformData = adPlatformService.readAdPlatformDataFromDiskSync();
+
+                await adPlatformService.downloadAndSaveAdPlatformAssets(adPlatformData, false);
             }
             
             // In any case, schedule another call to Ad-Platform:
