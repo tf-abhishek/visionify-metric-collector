@@ -10,12 +10,15 @@ const fileSizeSuffix = 'size';
 let _neid = '';
 
 exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince = true) {
+    let downloaded = false;
     await retry(async bail => {
-        await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince);
+        downloaded = downloaded || await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince);
     }, {
         retries: 5,
         onRetry: (err) => logger.warn(`Will retry error [${err}]`)
-    })
+    });
+
+    return downloaded;
 }
 
 const downloadAssetInternal = async function(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince) {
@@ -57,6 +60,8 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
         if (contentLength) {
             fs.writeFileSync(assetFileSizeFullPath, contentLength);
         }
+
+        return true;
         // TODO: if error - put in a "poison" list to retry later/whenever.
     }
     catch (error) {
@@ -95,6 +100,8 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
             
             throw error;
         }
+
+        return false;
     }
 }
 

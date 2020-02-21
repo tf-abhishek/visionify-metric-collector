@@ -128,10 +128,12 @@ const getCoolerData = async function () {
             coolerDataService.saveCoolerDataToDisk(coolerData);
         } else {
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
-            await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
+            const downloaded = await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
             // To trigger merchApp refresh:
-            //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
-            coolerDataService.saveCoolerDataToDisk(coolerData);
+            if (downloaded) {
+                //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+                coolerDataService.saveCoolerDataToDisk(coolerData);
+            }
         }
 
     } catch (error) {
