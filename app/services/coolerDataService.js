@@ -162,7 +162,7 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
         if (forceDownloadAnyway || fileRecoveryUtils.shouldRedownloadFile(directoryToSaveTo, imageFilename)) {
             const fileUrl = `${baseUrl}${imageFilename}`;
             if (!forceDownloadAnyway) {
-                logger.info(`Noticed a file that was not downloaded in previous cycle: ${imageFilename}, will download again`);
+                logger.info(`Noticed a file that was not fully downloaded in previous cycle: ${imageFilename}, will download again`);
             }
 
             const shouldUseIfModifiedSince = forceDownloadAnyway;
