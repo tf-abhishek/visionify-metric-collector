@@ -101,7 +101,7 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
             const assetDirectoryPath = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][0];
             const assetBaseUrl = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][1];
 
-            downloaded = downloaded || await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway);
+            downloaded = await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway) || downloaded;
         }
     }
 
@@ -170,7 +170,7 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
             }
 
             const shouldUseIfModifiedSince = forceDownloadAnyway;
-            downloaded = downloaded || await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince);
+            downloaded = await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince) || downloaded;
         } else {
             //logger.info(`Asset`)
         }

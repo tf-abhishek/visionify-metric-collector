@@ -12,7 +12,7 @@ let _neid = '';
 exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince = true) {
     let downloaded = false;
     await retry(async bail => {
-        downloaded = downloaded || await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince);
+        downloaded = await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince) || downloaded;
     }, {
         retries: 5,
         onRetry: (err) => logger.warn(`Will retry error [${err}]`)

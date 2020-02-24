@@ -22,7 +22,7 @@ function getFileExpectedSize(filePath) {
         
         return fileExpectedSize.toString('utf-8');
     } catch (error) {
-        logger.warn(`Could not get expected asset size for file [${filePath}]. Will treat it as a partial file and redownload.`);
+        logger.warn(`Could not get expected asset size for file [${filePath}]. Will treat it as a partial/non-existing file and redownload.`);
         
         return '0';
     }
