@@ -163,13 +163,14 @@ async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollec
         return false;
     }
     for (const imageFilename of imageCollection) {
-        if (forceDownloadAnyway || fileRecoveryUtils.shouldRedownloadFile(directoryToSaveTo, imageFilename)) {
+        const shouldRedownloadFile = fileRecoveryUtils.shouldRedownloadFile(directoryToSaveTo, imageFilename);
+        if (forceDownloadAnyway || shouldRedownloadFile) {
             const fileUrl = `${baseUrl}${imageFilename}`;
             if (!forceDownloadAnyway) {
                 logger.info(`Noticed a file that was not fully downloaded in previous cycle: ${imageFilename}, will download again`);
             }
 
-            const shouldUseIfModifiedSince = forceDownloadAnyway;
+            const shouldUseIfModifiedSince = !shouldRedownloadFile;
             downloaded = await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince) || downloaded;
         } else {
             //logger.info(`Asset`)

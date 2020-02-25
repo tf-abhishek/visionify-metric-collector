@@ -73,13 +73,14 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData, forceD
         createDirectoriesForAssets();
         for (var assetFilename in assetsToSave) {
             if (assetsToSave.hasOwnProperty(assetFilename)) {
-                if (forceDownload || fileRecoveryUtils.shouldRedownloadFile(dirToSaveTo, assetFilename)) {
+                const shouldRedownloadFile = fileRecoveryUtils.shouldRedownloadFile(dirToSaveTo, assetFilename);
+                if (forceDownload || shouldRedownloadFile) {
                     const assetUrl = assetsToSave[assetFilename];
                     if (!forceDownload) {
                         logger.info(`Noticed an ad-platform asset that was not downloaded in previous cycle: ${assetFilename}, will download again`);
                     }
         
-                    const shouldUseIfModifiedSince = forceDownload;
+                    const shouldUseIfModifiedSince = !shouldRedownloadFile;
                     await httpService.downloadAndSaveAsset(assetUrl, assetFilename, dirToSaveTo, shouldUseIfModifiedSince);
                 }
             }
