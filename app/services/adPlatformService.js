@@ -88,7 +88,7 @@ let adPlatformUrl;
             path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
         const getHeaders = getAdPlatformRequestHeaders(adPlatformDataLastModified);
         adPlatformUrl = await buildAdPlatformGetUrl();
-
+        
         const adPlatformDataResponse = await axios.get(adPlatformUrl, {
             headers: getHeaders,
         });

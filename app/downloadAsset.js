@@ -5,10 +5,7 @@ const utils = require('./services/utils');
 const logger = require('./services/logger');
 const config = require('./services/coolerCacheConfig');
 const merchAppSocket = require('./services/merchAppSocket');
-var http = require('http');
-var static = require('node-static');
 var socketFailuresCounter = 0;
-//var coolerName = "WBA-16092-000-C012"
 
 
 // IOT HUB MESSANGE BROKER
