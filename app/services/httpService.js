@@ -6,21 +6,26 @@ const fs = require('fs');
 const os = require('os');
 const axios = require('axios').default;
 const retry = require('async-retry')
+const fileSizeSuffix = 'size';
 let _neid = '';
 
-exports.downloadAndSaveAssetsIfModifiedSince = async function (downloadUrl, assetFilename, directoryPathToSaveTo) {
+exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince = true) {
+    let downloaded = false;
     await retry(async bail => {
-        await downloadIfModifiedSinceInternal(downloadUrl, assetFilename, directoryPathToSaveTo);
+        downloaded = await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince) || downloaded;
     }, {
         retries: 5,
         onRetry: (err) => logger.warn(`Will retry error [${err}]`)
-    })
+    });
+
+    return downloaded;
 }
 
-const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilename, directoryPathToSaveTo) {
+const downloadAssetInternal = async function(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince) {
     const assetFullPath = path.join(directoryPathToSaveTo, assetFilename);
+    const assetFileSizeFullPath = path.join(directoryPathToSaveTo, `${assetFilename}.${fileSizeSuffix}`);
     const fileLastModifiedTime = utils.getFileLastModifiedTime(assetFullPath);
-    const getHeaders = {
+    const getHeaders = !onlyIfModifiedSince ? { } : {
         'If-Modified-Since': fileLastModifiedTime
     };
 
@@ -42,7 +47,7 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
         });
 
         const contentLength = response.headers['content-length'];
-        const filesize = utils.getFilesizeInBytes(assetFullPath)
+        const filesize = utils.getFilesizeInBytes(assetFullPath);
         if (!contentLength) {
             logger.warn(`No content length received for ${utils.toUnconfidentialUrl(downloadUrl)}. Cannot verify completeness.`);
         } else if (`${filesize}` !== contentLength) {
@@ -51,6 +56,12 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
             logger.info(`Successfully verified saved file under ${assetFullPath}.`);
             logger.info(`#Downloaded and saved ${filesize} bytes.`);
         }
+
+        if (contentLength) {
+            fs.writeFileSync(assetFileSizeFullPath, contentLength);
+        }
+
+        return true;
         // TODO: if error - put in a "poison" list to retry later/whenever.
     }
     catch (error) {
@@ -81,10 +92,16 @@ const downloadIfModifiedSinceInternal = async function(downloadUrl, assetFilenam
                 // TODO: Handle broken download
             }
             logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
-            fs.unlink(assetFullPath);
+            fs.unlink(assetFullPath, err => {
+                if (err) {
+                    logger.warn(`Could not unlink erratic file from download-url [${downloadUrl}]. Details: [${err}]`);
+                }
+            });
             
             throw error;
         }
+
+        return false;
     }
 }
 
