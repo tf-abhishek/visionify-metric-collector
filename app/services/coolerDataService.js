@@ -23,7 +23,7 @@ const retailerToProductsUrlMap = {
     'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/'
 };
 const retailerToCoolerDataUrlMap = {
-    'WBA': 'https://planogram-editor-api.azurewebsites.net/screens/',
+    'WBA': 'https://planogram-editor-api-qa.azurewebsites.net/screens/',
     'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
 }
 const retailerToCoolerDataUrlSuffixMap = {

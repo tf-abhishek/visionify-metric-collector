@@ -22,7 +22,7 @@ const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
 
-//initializeListenerToMerchApp();
+initializeListenerToMerchApp();
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
@@ -53,6 +53,7 @@ function initializeListenerToMerchApp() {
         socketFailuresCounter++;
         logger.warn(`Failed to open a socket for merchApp communication on port ${merchAppSocket.listeningPort}`);
         if (socketFailuresCounter < socketInitRetryThreshold) {
+            logger.info('Retrying to initialize listener socket for merchApp.');
             setInterval(() => {
                 initializeListenerToMerchApp();
             }, socketListenerInterval * socketFailuresCounter);
@@ -196,6 +197,19 @@ Array.prototype.extend = function (other_array) {
 
 const coolerDataService = require('./services/coolerDataService');
 
+var _prevCoolerData = '';
+
+const sendCoolerDataToMerchApp = function(coolerData) {
+    if (JSON.stringify(coolerData) !== JSON.stringify(_prevCoolerData)) {
+        console.log('Will send updated cooler data to merchapp');
+        merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+
+        _prevCoolerData = coolerData;
+    } else {
+        console.log('New coolerData seems to be identical to previous one.');
+    }
+}
+
 const getCoolerData = async function () {
     try {
         let coolerData = await coolerDataService.getCoolerData();
@@ -207,6 +221,7 @@ const getCoolerData = async function () {
 
             //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
+            sendCoolerDataToMerchApp();
         } else {
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
             await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
