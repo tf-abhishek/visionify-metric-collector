@@ -1,4 +1,5 @@
 const utils = require('./utils');
+const fileRecoveryUtils = require('./fileRecoveryUtils');
 const path = require('path');
 const axios = require('axios').default;
 const fs = require('fs');
@@ -92,6 +93,7 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
     const allImagesDictionary = getAllDirsToFilenamesDictionary(coolerData);
     const assetCategoryToDirectoryAndBaseUrlDictionary = await getAssetCategoryToDirectoryAndBaseUrlDictionary();
 
+    let downloaded = false;
     for (var assetCategory in allImagesDictionary) {
         // check if the property/key is defined in the object itself, not in parent
         if (allImagesDictionary.hasOwnProperty(assetCategory)) {
@@ -99,9 +101,11 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
             const assetDirectoryPath = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][0];
             const assetBaseUrl = assetCategoryToDirectoryAndBaseUrlDictionary[assetCategory][1];
 
-            await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway);
+            downloaded = await downloadAndSaveAssetsImpl(assetDirectoryPath, assetBaseUrl, imageCollection, forceDownloadAnyway) || downloaded;
         }
     }
+
+    return downloaded;
 }
 
 async function getNeid() {
@@ -152,24 +156,54 @@ function getFromDictionary(neid, dictionary, queryTarget) {
 }
 
 async function downloadAndSaveAssetsImpl(directoryToSaveTo, baseUrl, imageCollection, forceDownloadAnyway) {
+    let downloaded = false;
     if (!directoryToSaveTo || !baseUrl) {
         logger.error(`Cannot download asset since either the directory to save to or the base Url is empty;
          baseUrl: [${baseUrl}], directoryToSaveTo: [${directoryToSaveTo}]`);
-        return;
+        return false;
     }
     for (const imageFilename of imageCollection) {
-        if (forceDownloadAnyway || !fs.existsSync(path.join(directoryToSaveTo, imageFilename))) {
+        const shouldRedownloadFile = fileRecoveryUtils.shouldRedownloadFile(directoryToSaveTo, imageFilename);
+        if (forceDownloadAnyway || shouldRedownloadFile) {
             const fileUrl = `${baseUrl}${imageFilename}`;
             if (!forceDownloadAnyway) {
-                logger.info(`Noticed a file that was not downloaded in previous cycle: ${imageFilename}, will download again`);
+                logger.info(`Noticed a file that was not fully downloaded in previous cycle: ${imageFilename}, will download again`);
             }
 
-            await httpService.downloadAndSaveAssetsIfModifiedSince(fileUrl, imageFilename, directoryToSaveTo);
+            const shouldUseIfModifiedSince = !shouldRedownloadFile;
+            downloaded = await httpService.downloadAndSaveAsset(fileUrl, imageFilename, directoryToSaveTo, shouldUseIfModifiedSince) || downloaded;
         } else {
             //logger.info(`Asset`)
         }
     }
+
+    return downloaded;
 }
+/*
+function shouldRedownloadFile(directoryToSaveTo, assetFileName) {
+    const assetFullPath = path.join(directoryToSaveTo, assetFileName);
+    
+    return !fs.existsSync(assetFullPath) || isFilePartial(assetFullPath);
+}
+
+function isFilePartial(assetFullPath) {
+    const fileRealSize = utils.getFilesizeInBytes(assetFullPath);
+    const fileExpectedSize = getFileExpectedSize(`${assetFullPath}.size`);
+    
+    return `${fileRealSize}` !== fileExpectedSize
+}
+
+function getFileExpectedSize(filePath) {
+    try {
+        const fileExpectedSize = fs.readFileSync(filePath);
+        
+        return fileExpectedSize.toString('utf-8');
+    } catch (error) {
+        logger.warn(`Could not get expected asset size for file [${filePath}]. Will treat it as a partial file and redownload.`);
+        
+        return '0';
+    }
+}*/
 
 function createDirectoriesForAssets() {
     utils.createDirectoriesForAssetsSync(_storageLocalProductsImagesDir,

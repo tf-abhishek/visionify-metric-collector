@@ -11,12 +11,12 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'e1cb564d-2acb-4b8d-8a05-d40157e314cd'
-  imageRepository: 'coolercachedev'
+  imageRepository: 'cooler-cache-dev'
   containerRegistry: 'csicontainers.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
   major: 0
-  minor: 0
+  minor: 1
   
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -55,7 +55,7 @@ stages:
         displayName: Build and push an image to container registry
         inputs:
           command: buildAndPush
-          repository: $(imageRepository)-dev
+          repository: $(imageRepository)
           dockerfile: $(dockerfilePath)
           containerRegistry: $(dockerRegistryServiceConnection)
           tags: |
