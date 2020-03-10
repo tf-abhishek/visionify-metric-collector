@@ -6,11 +6,11 @@ const fs = require('fs');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
 const logger = require('./logger');
-const retry = require('async-retry')
+const retry = require('async-retry');
 
-const _coolerPath = `https://planogram-editor-api.azurewebsites.net/screens/`
-const _tagsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-tags/`
-const _labelsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-labels/`
+const _coolerPath = config.planogramurl;
+const _tagsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-tags/`;
+const _labelsImagesUrl = `https://coolerassets.blob.core.windows.net/planogram-images-labels/`;
 const _imageFileExtension = 'png';
 const _productsAssetKey = 'products';
 const _labelsAssetKey = 'labels';
@@ -24,7 +24,7 @@ const retailerToProductsUrlMap = {
     'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/'
 };
 const retailerToCoolerDataUrlMap = {
-    'WBA': 'https://planogram-editor-api-qa.azurewebsites.net/screens/',
+    'WBA': _coolerPath,
     'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
 }
 const retailerToCoolerDataUrlSuffixMap = {

@@ -112,8 +112,8 @@ function printResultFor(op) {
 // IOT HUB MESSANGE BROKER
 
 const sendCoolerDataToMerchApp = function(coolerData) {
-    if (JSON.stringify(coolerData) !== JSON.stringify(prevCoolerData)) {
-        console.log('Will send updated cooler data to merchapp');
+    if (JSON.stringify(coolerData) != JSON.stringify(prevCoolerData)) {
+        console.log(`Will send updated cooler data to merchapp`);//: \n${JSON.stringify(coolerData)}\n\n`);
         merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
 
         prevCoolerData = coolerData;
@@ -133,7 +133,7 @@ const getCoolerData = async function () {
 
             //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
-            sendCoolerDataToMerchApp();
+            sendCoolerDataToMerchApp(coolerData);
         } else {
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
             const downloaded = await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
@@ -141,7 +141,7 @@ const getCoolerData = async function () {
             if (downloaded) {
                 //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
                 coolerDataService.saveCoolerDataToDisk(coolerData);
-                sendCoolerDataToMerchApp();
+                sendCoolerDataToMerchApp(coolerData);
             }
         }
 
