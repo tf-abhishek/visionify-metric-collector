@@ -5,12 +5,13 @@ const merchAppSocket = require('./services/merchAppSocket');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
-const socketInitRetryThreshold = 10;        // If we failed for 10 times, do not retry anymore
+const socketInitRetryThreshold = 100;        // If we failed for 100 times, do not retry anymore
 const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
+var prevCoolerData = '';
 
 Date.MIN_VALUE = new Date(-8640000000000000);
 Array.prototype.extend = function (other_array) {
@@ -18,9 +19,8 @@ Array.prototype.extend = function (other_array) {
     other_array.forEach(function (v) { this.push(v) }, this);
 }
 
-
+initializeListenerToMerchApp();
 // IOT HUB MESSANGE BROKER
-//initializeListenerToMerchApp();
 Client.fromEnvironment(Transport, function (err, client) {
     if (err) {
         throw err;
@@ -51,6 +51,7 @@ function initializeListenerToMerchApp() {
         socketFailuresCounter++;
         logger.warn(`Failed to open a socket for merchApp communication on port ${merchAppSocket.listeningPort}`);
         if (socketFailuresCounter < socketInitRetryThreshold) {
+            logger.info('Retrying to initialize listener socket for merchApp.');
             setInterval(() => {
                 initializeListenerToMerchApp();
             }, socketListenerInterval * socketFailuresCounter);
@@ -64,14 +65,9 @@ function initializeListenerToMerchApp() {
 
 function handleAdPlatform(client) {
     logger.info('Requesting Ad-Platform data');
-    //sendTelemetryTestMessage(client);
+    
     adPlatformService.getAdPlatformData().then(
         (data) => {
-            /*try {
-                sendPOP(client);
-            } catch (error) {
-                logger.error(`Error sending POP: ${error}`);
-            }*/
             if (data !== adPlatformService.adPlatformNothingChanged) {
                 logger.info('Got a response from Ad-Platform. Will download and then send playlist to triggerBridge');
                 adPlatformService.downloadAndSaveAdPlatformAssets(data).then(
@@ -115,6 +111,17 @@ function printResultFor(op) {
 }
 // IOT HUB MESSANGE BROKER
 
+const sendCoolerDataToMerchApp = function(coolerData) {
+    if (JSON.stringify(coolerData) != JSON.stringify(prevCoolerData)) {
+        console.log(`Will send updated cooler data to merchapp`);//: \n${JSON.stringify(coolerData)}\n\n`);
+        merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+
+        prevCoolerData = coolerData;
+    } else {
+        console.log('New coolerData seems to be identical to previous one.');
+    }
+}
+
 const getCoolerData = async function () {
     try {
         let coolerData = await coolerDataService.getCoolerData();
@@ -126,6 +133,7 @@ const getCoolerData = async function () {
 
             //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
+            sendCoolerDataToMerchApp(coolerData);
         } else {
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
             const downloaded = await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
@@ -133,6 +141,7 @@ const getCoolerData = async function () {
             if (downloaded) {
                 //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
                 coolerDataService.saveCoolerDataToDisk(coolerData);
+                sendCoolerDataToMerchApp(coolerData);
             }
         }
 
