@@ -183,5 +183,5 @@ const buildAdPlatformGetUrl = async function () {
 
 function createDirectoriesForAssets() {    
     utils.createDirectoriesForAssetsSync(_fullDoorAdDirectoryPath, _middleBannerDirectoryPath,
-        _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath, _spotlightAdDirectoryPath);
+        _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath, _labelDirectoryPath, _spotlightAdDirectoryPath);
 }
