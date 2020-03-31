@@ -19,12 +19,15 @@ const _tagAssetTypeKey = 'Tag';
 const _tagAssetTypeDirectory = 'tags';
 const _labelAssetTypeKey = 'Label';
 const _labelAssetTypeKDirectory = 'labels';
+const _spotlightAdAssetTypeKey = 'SpotlightAd';
+const _spotlightAdAssetTypeDirectory = 'SpotAd';
 const _fullDoorAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _fullDoorAdAssetTypeKey);
 const _middleBannerDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _middleBannerAssetTypeKey);
 const _topBannerDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _topBannerAssetTypeKey);
 const _nativeAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _nativeAdAssetTypeDirectory);
 const _tagDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _tagAssetTypeDirectory);
 const _labelDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _labelAssetTypeKDirectory);
+const _spotlightAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _spotlightAdAssetTypeDirectory);
 const _assetTypeToLocalDirectory = {
     [_fullDoorAdAssetTypeKey]: _fullDoorAdDirectoryPath,
     [_middleBannerAssetTypeKey]: _middleBannerDirectoryPath,
@@ -32,6 +35,7 @@ const _assetTypeToLocalDirectory = {
     [_nativeAdAssetTypeKey]: _nativeAdDirectoryPath,
     [_tagAssetTypeKey]: _tagDirectoryPath,
     [_labelAssetTypeKey]: _labelDirectoryPath,
+    [_spotlightAdAssetTypeKey]: _spotlightAdDirectoryPath
 }
 const _adPlatformNothingChanged = 'Not modified';
 
@@ -179,5 +183,5 @@ const buildAdPlatformGetUrl = async function () {
 
 function createDirectoriesForAssets() {    
     utils.createDirectoriesForAssetsSync(_fullDoorAdDirectoryPath, _middleBannerDirectoryPath,
-        _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath);
+        _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath, _labelDirectoryPath, _spotlightAdDirectoryPath);
 }
