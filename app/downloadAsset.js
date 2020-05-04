@@ -2,8 +2,10 @@ const logger = require('./services/logger');
 const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
 const merchAppSocket = require('./services/merchAppSocket');
+const skinBuilderService = require('./services/skinBuilderService');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
+const skinUpdateInterval = config.intervalForSkinDownload;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
 const socketInitRetryThreshold = 100;        // If we failed for 100 times, do not retry anymore
 const Transport = require('azure-iot-device-mqtt').Mqtt;
@@ -39,6 +41,8 @@ Client.fromEnvironment(Transport, function (err, client) {
                 getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
                 // Send trigger bridge some stuff:                
                 handleAdPlatform(client);
+
+                handleSkinBuilder();
             }
         });
     }
@@ -111,6 +115,25 @@ function printResultFor(op) {
 }
 // IOT HUB MESSANGE BROKER
 
+
+async function handleSkinBuilder() {
+    try {
+        const newSkin = await skinBuilderService.downloadSkinIfUpdated();
+    
+        if (newSkin) {
+            merchAppSocket.sendMerchAppSkinUpdate();
+        } else {
+            logger.info('No new skin to update');
+        }
+    } catch (error) {
+        logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`);
+    }
+    
+    setTimeout(async () => {
+        await handleSkinBuilder();
+    }, skinUpdateInterval);
+}
+
 const sendCoolerDataToMerchApp = function(coolerData) {
     if (JSON.stringify(coolerData) != JSON.stringify(prevCoolerData)) {
         console.log(`Will send updated cooler data to merchapp`);//: \n${JSON.stringify(coolerData)}\n\n`);
@@ -159,7 +182,7 @@ const getCoolerData = async function () {
 //sendDataToTriggerBridge({sendOutpu--tEvent: function(...abc) {console.log(abc)}});
 //getCoolerData().then((data) => console.log('Finished!'));
 //adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
-//getAdPlatformData().then((data) => { console.log('final result: ' + data) });*/
+//handleSkinBuilder().then((a) => console.log('Finished skin stuff'));
 
 process.on('uncaughtException', err => {
     // TODO: Send telemetry of that exception
