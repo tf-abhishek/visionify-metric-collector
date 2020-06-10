@@ -64,13 +64,13 @@ stages:
         inputs:
           targetType: 'inline'
           script: |
-            git tag $(major).$(minor).$(patch)-amd64
-            Write-Host "Successfully created tag $(major).$(minor).$(patch)-amd64"
+            git tag dev-$(major).$(minor).$(patch)-amd64
+            Write-Host "Successfully created tag dev-$(major).$(minor).$(patch)-amd64"
           errorActionPreference: 'continue'
       - task: PowerShell@2
         inputs:
           targetType: 'inline'
           script: |
             git push --tags
-                  Write-Host "Successfully pushed tag $(major).$(minor).$(patch)-amd64 to origin"
+                  Write-Host "Successfully pushed tag dev-$(major).$(minor).$(patch)-amd64 to origin"
           errorActionPreference: 'continue'
