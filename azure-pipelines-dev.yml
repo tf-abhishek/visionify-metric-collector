@@ -15,7 +15,7 @@ variables:
   containerRegistry: 'csicontainers.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  major: 0
+  major: 1
   minor: 1
   
   # Agent VM image name
