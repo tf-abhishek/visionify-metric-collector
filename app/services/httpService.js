@@ -37,12 +37,14 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
         });
         logger.info(`Downloaded an asset from: [${downloadUrl}], will save it to: [${directoryPathToSaveTo}]`);
         // Save the file:
-        await new Promise(resolve => {
+        await new Promise((resolve, reject) => {
             const writeSteam = response.data.pipe(fs.createWriteStream(assetFullPath, { flags: 'w+' }));
             writeSteam.on('finish', resolve);
             writeSteam.on('error', function (err) {
                 logger.info(`Error saving image ${assetFilename} under ${directoryPathToSaveTo}.`
                     + ` Details: ${err}`);
+
+                reject(err);
             });
         });
 
