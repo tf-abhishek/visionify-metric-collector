@@ -1,0 +1,76 @@
+# Docker
+# Build and push an image to Azure Container Registry
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  # Container registry service connection established during pipeline creation
+  dockerRegistryServiceConnection: 'e1cb564d-2acb-4b8d-8a05-d40157e314cd'
+  imageRepository: 'cooler-cache-prod'
+  containerRegistry: 'csicontainers.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '$(Build.BuildId)'
+  major: 0
+  minor: 1
+  
+  # Agent VM image name
+  vmImageName: 'ubuntu-latest'
+
+stages:
+
+- stage:
+  displayName: Build_dev_Version_Number
+  jobs:
+  - job: Build_dev_Version_Number
+    variables:
+       patch: $[counter(variables['minor'], 0)]
+    steps:
+      - bash: |
+           echo "##vso[build.updatebuildnumber]$(major).$(minor).$(patch)"
+        name: SetDevBuildName
+
+- stage: Build
+  displayName: Build and push stage
+  jobs:  
+  - job: Build
+    variables:
+        patch: $[counter(variables['minor'], 0)]
+    displayName: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+      - checkout: self
+        persistCredentials: true
+        clean: true
+
+      - bash: |
+           echo "##vso[build.updatebuildnumber]$(major).$(minor).$(patch)"
+        name: SetDevBuildName
+      - task: Docker@2
+        displayName: Build and push an image to container registry
+        inputs:
+          command: buildAndPush
+          repository: $(imageRepository)
+          dockerfile: $(dockerfilePath)
+          containerRegistry: $(dockerRegistryServiceConnection)
+          tags: |
+            $(major).$(minor).$(patch)-amd64
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            git tag $(major).$(minor).$(patch)-amd64
+            Write-Host "Successfully created tag $(major).$(minor).$(patch)-amd64"
+          errorActionPreference: 'continue'
+      - task: PowerShell@2
+        inputs:
+          targetType: 'inline'
+          script: |
+            git push --tags
+                  Write-Host "Successfully pushed tag $(major).$(minor).$(patch)-amd64 to origin"
+          errorActionPreference: 'continue'
