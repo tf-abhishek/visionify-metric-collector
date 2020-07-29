@@ -1,0 +1,29 @@
+# Generic Pipeline for SonarScan
+
+trigger:
+- master
+- dev
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+# Sonar Cloud Settings
+- task: SonarCloudPrepare@1
+  displayName: 'Prepare analysis on SonarCloud'
+  inputs:
+    SonarCloud: 'CSI-SonarCloud'
+    organization: 'coolerscreens'
+    scannerMode: 'CLI'
+    configMode: 'manual'
+    cliProjectKey: 'csi-cooler-cache'
+    cliProjectName: 'cooler-cache'
+    cliSources: '.'
+
+- task: SonarCloudAnalyze@1
+  displayName: 'Run Code Analysis'
+
+- task: SonarCloudPublish@1
+  displayName: 'Publish Quality Gate Result'
+  inputs:
+    pollingTimeoutSec: '300'
