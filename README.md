@@ -1,0 +1,2 @@
+### Sonar Scan
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=csi-cooler-cache&metric=alert_status&token=92063ffc6823f107ea56eaadc7576aa9b55789d8)](https://sonarcloud.io/dashboard?id=csi-cooler-cache)
