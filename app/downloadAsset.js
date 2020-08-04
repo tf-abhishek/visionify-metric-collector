@@ -22,31 +22,35 @@ Array.prototype.extend = function (other_array) {
 }
 
 initializeListenerToMerchApp();
-// IOT HUB MESSANGE BROKER
-Client.fromEnvironment(Transport, function (err, client) {
-    if (err) {
-        throw err;
-    } else {
-        client.on('error', function (err) {
+initializeEdgeHubClient();
+
+function initializeEdgeHubClient() {
+    // IOT HUB MESSANGE BROKER
+    Client.fromEnvironment(Transport, function (err, client) {
+        if (err) {
             throw err;
-        });
-
-        // connect to the Edge instance
-        client.open(function (err) {
-            if (err) {
+        } else {
+            client.on('error', function (err) {
                 throw err;
-            } else {
-                console.log('IoT Hub module client initialized, going to get coolerData');
-                
-                getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                // Send trigger bridge some stuff:                
-                handleAdPlatform(client);
+            });
 
-                handleSkinBuilder();
-            }
-        });
-    }
-});
+            // connect to the Edge instance
+            client.open(function (err) {
+                if (err) {
+                    throw err;
+                } else {
+                    console.log('IoT Hub module client initialized, going to get coolerData');
+                    
+                    getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
+                    // Send trigger bridge some stuff:                
+                    handleAdPlatform(client);
+
+                    handleSkinBuilder();
+                }
+            });
+        }
+    });
+}
 
 function initializeListenerToMerchApp() {
     try {
@@ -179,7 +183,6 @@ const getCoolerData = async function () {
 }
 
 
-//sendDataToTriggerBridge({sendOutpu--tEvent: function(...abc) {console.log(abc)}});
 //getCoolerData().then((data) => console.log('Finished!'));
 //adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
 //handleSkinBuilder().then((a) => console.log('Finished skin stuff'));
