@@ -59,7 +59,7 @@ stages:
           dockerfile: $(dockerfilePath)
           containerRegistry: $(dockerRegistryServiceConnection)
           tags: |
-            dev-$(major).$(minor).$(patch)-amd64
+            $(major).$(minor).$(patch)-amd64
       - task: PowerShell@2
         inputs:
           targetType: 'inline'
