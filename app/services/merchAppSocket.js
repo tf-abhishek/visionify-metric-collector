@@ -5,7 +5,7 @@ const logger = require('./logger');
 const utils = require('./utils');
 const listeningPort = process.env.merchappsocketport || config.merchAppListenPort;
 const coolerDataUpdatedKey = 'coolerDataUpdated';
-const skinUpdatedKey = 'skinUpdated';
+const skinUpdatedKey = 'coolerStyleUpdated';
 const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);
 let _server;
 let _socket;

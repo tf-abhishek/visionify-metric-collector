@@ -125,7 +125,7 @@ async function handleSkinBuilder() {
         const newSkin = await skinBuilderService.downloadSkinIfUpdated();
     
         if (newSkin) {
-            merchAppSocket.sendMerchAppCoolerDataUpdate();  //  TODO: Use: .sendMerchAppSkinUpdate();
+            merchAppSocket.sendMerchAppSkinUpdate();
         } else {
             logger.info('No new skin to update');
         }
