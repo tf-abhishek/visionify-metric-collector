@@ -18,11 +18,10 @@ const _skinBuilderUrl = utils.trimUrlEnd(config.skinBuilderUrl) + `/${_skinBuild
 
 exports.downloadSkinIfUpdated = async function () {
     logger.info(`Getting skin builder file.`);
+    createDirsIfneeded();
     let downloaded = await httpService.downloadAndSaveAsset(_skinBuilderUrl, _skinBuilderFilename, _storageLocalSkinDir, true);
 
     if (downloaded) {
-        createDirsIfneeded();
-
         try {
             await decompress();
         } catch (error) {
