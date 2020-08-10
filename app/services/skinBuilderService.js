@@ -39,6 +39,11 @@ exports.downloadSkinIfUpdated = async function () {
     return downloaded;
 }
 
+exports.getCurrentStylesJsonFile = async function() {
+    // TODO: This should move to merchApp, this is temp for testing
+    return await fsAsync.readFile(path.join(_storageLocalSkinDecompressedDir, 'styles.json'));
+}
+
 function createDirsIfneeded() {
     utils.createDirectoriesForAssetsSync(_storageLocalSkinDir, _storageLocalSkinDecompressedDir);
 }
