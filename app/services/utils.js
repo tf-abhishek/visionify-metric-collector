@@ -18,6 +18,14 @@ var _screenName = undefined;
     return _screenName;
 }*/
 
+exports.trimUrlEnd = function(url) {
+    if (url.endsWith('/')) {
+        return url.slice(0, -1);
+    }
+    
+    return url;
+}
+
 exports.getFileLastModifiedTime = function (fileFullPath) {
     let stats = undefined;
     try {

@@ -21,13 +21,14 @@ config.planogramurl = process.env.planogramurl || `https://planogram-editor-api.
 config.NeidQueryAddress = 'https://location-manager-api.azurewebsites.net/api/assets/GetData?hostname=';
 config.intervalForCoolerDataDownloadMs = process.env.coolercacheintervalms || 10 * 60 * 1000; // 10 minutes is default
 config.intervalForAdPlatformDownloadMs = process.env.adplatformintervalms || 30 * 60 * 1000; // 30 minutes is default
+config.intervalForSkinDownload = process.env.skinintervalms || 60 * 60 * 1000;              // Every hour is default
 config.defaultStore = process.env.defaultstore || 'WBA';
 config.adPlatformFunctionCode = process.env.adplatformkey || config.adPlatformFunctionCodeProd;
 config.adPlatformBaseUrl = `${trimUrlEnd(adPlatformHostname)}/api/external/screenData/`
 config.coolerCacheRootFolder = coolerCacheRootFolderProd;
 config.coolerCacheAssetsFolder = config.coolerCacheRootFolder + '/resources';
 config.storageLocalAdPlatformDataDir = config.coolerCacheAssetsFolder;
-
+config.skinBuilderUrl = process.env.skinbuilderurl || 'https://coolerassets.blob.core.windows.net/skin-builder-prod/current/';
 
 function trimUrlEnd(url) {
     if (url.endsWith('/')) {
