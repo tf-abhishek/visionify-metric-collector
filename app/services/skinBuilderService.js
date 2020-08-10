@@ -67,7 +67,7 @@ async function safelyRenameArchive() {
 
 async function safelyRenamePreviousSkinDir() {
     try {
-        timestamp = new Date().toISOString();
+        let timestamp = new Date().toISOString();
         await fsAsync.rename(_storageLocalSkinDecompressedDir, `${_storageLocalSkinDecompressedDir}_${timestamp}`);
     } catch (error) {
         if(error && error.code == 'ENOENT') { 
