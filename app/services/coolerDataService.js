@@ -19,16 +19,19 @@ const _storageLocalProductsImagesDir = path.join(config.coolerCacheAssetsFolder,
 const _storageLocalTagsImagesDir = path.join(config.coolerCacheAssetsFolder, _tagsAssetKey);
 const _storageLocalLabelsImagesDir = path.join(config.coolerCacheAssetsFolder, _labelsAssetKey);
 const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);  // Outside assets folder!
-const retailerToProductsUrlMap = { 
+const retailerToProductsUrlMap = {
     'WBA': 'https://coolerassets.blob.core.windows.net/planogram-images-haw/',
-    'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/'
+    'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/',
+    'GGO': 'https://coolerassets.blob.core.windows.net/planogram-images-gg/'
 };
 const retailerToCoolerDataUrlMap = {
     'WBA': _coolerPath,
+    'GGO': _coolerPath,
     'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
 }
 const retailerToCoolerDataUrlSuffixMap = {
     'WBA': '',
+    'GGO': '',
     'LCL': '/planomap'
 }
 var _assetCategoryToDirectoryDictionary = undefined;
