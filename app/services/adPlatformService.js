@@ -14,6 +14,7 @@ const _fullDoorAdAssetTypeKey = 'FullDoorAd';
 const _middleBannerAssetTypeKey = 'MiddleBanner';
 const _topBannerAssetTypeKey = 'TopBanner';
 const _nativeAdAssetTypeKey = 'NativeAd';
+const _nativeFilterAssetTypeKey = 'NativeFilters';
 const _nativeAdAssetTypeDirectory = 'products';
 const _tagAssetTypeKey = 'Tag';
 const _tagAssetTypeDirectory = 'tags';
@@ -25,6 +26,7 @@ const _fullDoorAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir,
 const _middleBannerDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _middleBannerAssetTypeKey);
 const _topBannerDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _topBannerAssetTypeKey);
 const _nativeAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _nativeAdAssetTypeDirectory);
+const _nativeFilterDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _nativeFilterAssetTypeKey);
 const _tagDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _tagAssetTypeDirectory);
 const _labelDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _labelAssetTypeKDirectory);
 const _spotlightAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _spotlightAdAssetTypeDirectory);
@@ -33,6 +35,7 @@ const _assetTypeToLocalDirectory = {
     [_middleBannerAssetTypeKey]: _middleBannerDirectoryPath,
     [_topBannerAssetTypeKey]: _topBannerDirectoryPath,
     [_nativeAdAssetTypeKey]: _nativeAdDirectoryPath,
+    [_nativeFilterAssetTypeKey]: _nativeFilterDirectoryPath,
     [_tagAssetTypeKey]: _tagDirectoryPath,
     [_labelAssetTypeKey]: _labelDirectoryPath,
     [_spotlightAdAssetTypeKey]: _spotlightAdDirectoryPath
@@ -62,8 +65,7 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData, forceD
             return;
         }
         if (!campaign.Assets) {
-            logger.warn(`Campaign has no assets: ${campaign}`);
-
+            logger.warn(`Campaign has no assets: ${JSON.stringify(campaign)}`);
         }
 
         const dirToSaveTo = _assetTypeToLocalDirectory[campaign.AdType]
@@ -181,7 +183,7 @@ const buildAdPlatformGetUrl = async function () {
     return `${_adPlatformConfig.adPlatformBaseUrl}${neid}?code=${_adPlatformConfig.adPlatformFunctionCode}`;
 }
 
-function createDirectoriesForAssets() {    
+function createDirectoriesForAssets() {
     utils.createDirectoriesForAssetsSync(_fullDoorAdDirectoryPath, _middleBannerDirectoryPath,
         _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath, _labelDirectoryPath, _spotlightAdDirectoryPath);
 }
