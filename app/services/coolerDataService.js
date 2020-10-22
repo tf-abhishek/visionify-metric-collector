@@ -22,16 +22,19 @@ const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerDa
 const retailerToProductsUrlMap = {
     'WBA': 'https://coolerassets.blob.core.windows.net/planogram-images-haw/',
     'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/',
-    'GGO': 'https://coolerassets.blob.core.windows.net/planogram-images-gg/'
+    'GGO': 'https://coolerassets.blob.core.windows.net/planogram-images-gg/',
+    'KRO': 'https://coolerassets.blob.core.windows.net/planogram-images-kro/'
 };
 const retailerToCoolerDataUrlMap = {
     'WBA': _coolerPath,
     'GGO': _coolerPath,
+    'KRO': _coolerPath,
     'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
 }
 const retailerToCoolerDataUrlSuffixMap = {
     'WBA': '',
     'GGO': '',
+    'KRO': '',
     'LCL': '/planomap'
 }
 var _assetCategoryToDirectoryDictionary = undefined;
@@ -44,9 +47,9 @@ exports.getCoolerData = async function () {
         logger.info(`Getting coolerData.`);
         coolerDataResponse = await axios.get(await getCoolerDataUrl());
     }, {
-        retries: 5,
-        onRetry: (err) => logger.warn(`Will retry error [${err}]`)
-    });
+            retries: 5,
+            onRetry: (err) => logger.warn(`Will retry error [${err}]`)
+        });
 
     return coolerDataResponse ? coolerDataResponse.data : '';
 }
@@ -57,21 +60,21 @@ exports.saveCoolerDataToDisk = function (coolerData) {
     try {
         fs.writeFileSync(coolerDataFileFullPath,
             JSON.stringify(coolerData),
-            { flag: 'w+'});
+            { flag: 'w+' });
         logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
     } catch (error) {
         logger.error(`Error saving coolerData: ${err}`);
     }
-    
+
     /*fs.writeFile(coolerDataFileFullPath,
         /*coolerDataWindowPrependPrefix + *//*JSON.stringify(coolerData),
-        { flag: 'w+' },
-        function (err) {
-            if (err) {
-                return logger.error(`Error saving coolerData: ${err}`);
-            }
-            logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
-        });*/
+{ flag: 'w+' },
+function (err) {
+if (err) {
+    return logger.error(`Error saving coolerData: ${err}`);
+}
+logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
+});*/
 }
 
 exports.wasCoolerDataUpdated = function (currentCoolerData) {
@@ -113,7 +116,7 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
 
 async function getNeid() {
     if (!_neid) {
-        _neid = await httpService.getNEID();    
+        _neid = await httpService.getNEID();
     }
 
     return _neid;
@@ -142,7 +145,7 @@ async function getCoolerDataUrl() {
 
     const coolerDataUrl = getFromDictionary(neid, retailerToCoolerDataUrlMap, "coolerData");
     const coolerDataUrlSuffix = getFromDictionary(neid, retailerToCoolerDataUrlSuffixMap, "coolerData");
-    
+
     return `${coolerDataUrl}${neid}${coolerDataUrlSuffix}`;
 }
 
