@@ -1,6 +1,7 @@
 const logger = require('./services/logger');
 const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
+const httpService = require('./services/httpService');
 const merchAppSocket = require('./services/merchAppSocket');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
@@ -27,6 +28,16 @@ Client.fromEnvironment(Transport, function (err, client) {
     } else {
         client.on('error', function (err) {
             throw err;
+        });
+
+        client.on('refreshNEID', function (err) {
+            const _neid = await httpService.getNEID();
+            console.log(`Direct Method is called to update NEID: ${_neid}`);
+        });
+
+        client.on('refreshCoolerData', function (err) {
+            getCoolerData(true).then((data) => console.log('Got cooler data, saved it and all!'));
+            console.log('Direct Method is called to update CoolerData.json file');
         });
 
         // connect to the Edge instance
@@ -122,7 +133,7 @@ const sendCoolerDataToMerchApp = function(coolerData) {
     }
 }
 
-const getCoolerData = async function () {
+const getCoolerData = async function (isOnDemandCall = false) {
     try {
         let coolerData = await coolerDataService.getCoolerData();
 
@@ -150,9 +161,12 @@ const getCoolerData = async function () {
         logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
     }
 
-    setTimeout(async () => {
-        await getCoolerData();
-    }, getCoolerDataIntervalInMs);
+    if(!isOnDemandCall)
+    {
+        setTimeout(async () => {
+            await getCoolerData();
+        }, getCoolerDataIntervalInMs);
+    }
 }
 
 
