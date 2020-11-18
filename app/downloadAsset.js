@@ -30,16 +30,6 @@ Client.fromEnvironment(Transport, function (err, client) {
             throw err;
         });
 
-        client.on('refreshNEID', function (err) {
-            const _neid = await httpService.getNEID();
-            console.log(`Direct Method is called to update NEID: ${_neid}`);
-        });
-
-        client.on('refreshCoolerData', function (err) {
-            getCoolerData(true).then((data) => console.log('Got cooler data, saved it and all!'));
-            console.log('Direct Method is called to update CoolerData.json file');
-        });
-
         // connect to the Edge instance
         client.open(function (err) {
             if (err) {
@@ -50,6 +40,23 @@ Client.fromEnvironment(Transport, function (err, client) {
                 getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
                 // Send trigger bridge some stuff:                
                 handleAdPlatform(client);
+
+                client.on('inputMessage', function (inputName, msg) {
+                    console.log(`Entered inputMessage`);
+                    logger.info(`Entered inputMessage`);
+                    
+                    if (inputName == "refreshCoolerData"){
+                        console.log(`Entered refreshCoolerData`);
+                        getCoolerData(true).then((data) => console.log('Got cooler data, saved it and all!'));
+                        console.log('Direct Method is called to update CoolerData.json file');
+                    }
+
+                    if (inputName == "refreshNEID"){
+                        console.log(`Entered refreshNEID`);
+                        const _neid = httpService.getNEID(true);
+                        console.log(`Direct Method is called to update NEID: ${_neid}`);
+                    }
+                });
             }
         });
     }
