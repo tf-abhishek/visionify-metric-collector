@@ -64,6 +64,10 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData, forceD
             logger.error(`Cannot interpret adType for campaign ${JSON.stringify(campaign)}`);
             return;
         }
+        if (campaign.AdProvider !== 'CSI') {
+            logger.info(`Non CSI campaign: ${JSON.stringify(campaign)}`);
+            return;
+        }
         if (!campaign.Assets) {
             logger.warn(`Campaign has no assets: ${JSON.stringify(campaign)}`);
         }
