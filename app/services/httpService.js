@@ -107,8 +107,8 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
     }
 }
 
-exports.getNEID = async function() {
-    if (!_neid) {
+exports.getNEID = async function(updateNEID = false) {
+    if (!_neid || updateNEID) {
         try {
             _neid = await getNeidFromLocationApi();
             
