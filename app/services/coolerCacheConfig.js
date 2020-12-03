@@ -11,7 +11,7 @@ config.adPlatformBaseUrlProd = 'https://prod-ad-func.azurewebsites.net/api/exter
 const adPlatformHostname = process.env.adplatformurl || 'https://prod-ad-func.azurewebsites.net';
 
 const coolerCacheRootFolderProd = '/home/csiadmin/coolerCache';
-const coolerCacheRootFolderDebug = './app/yo'; 
+const coolerCacheRootFolderDebug = './app/yo';
 
 //config.screenNEIDPath = './app/screenNameFile';
 
@@ -28,6 +28,12 @@ config.coolerCacheRootFolder = coolerCacheRootFolderProd;
 config.coolerCacheAssetsFolder = config.coolerCacheRootFolder + '/resources';
 config.storageLocalAdPlatformDataDir = config.coolerCacheAssetsFolder;
 
+// DB values for cookie project nutrition data
+// These are defaulted to prod values but can be rewritten by env variables set in the deployment
+config.nutritionDbName = process.env.nutritionDbName || 'productdata';
+config.nutritionDbServer = process.env.nutritionDbServer || 'csi-rvaetl-sql.database.windows.net';
+config.nutritionDbUsername = process.env.nutritionDbUsername || 'csi_readonly';
+config.nutritionDbPassword = process.env.nutritionDbPassword || 'C00l3rsD2t2#s';
 
 function trimUrlEnd(url) {
     if (url.endsWith('/')) {

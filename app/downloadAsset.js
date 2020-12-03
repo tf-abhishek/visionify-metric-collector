@@ -3,6 +3,7 @@ const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
 const httpService = require('./services/httpService');
 const merchAppSocket = require('./services/merchAppSocket');
+const nutritionDataService = require('./services/nutritionDataService');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
@@ -16,9 +17,11 @@ var prevCoolerData = '';
 
 Date.MIN_VALUE = new Date(-8640000000000000);
 Array.prototype.extend = function (other_array) {
-    if (!utils.isArray(other_array)) return;
-    other_array.forEach(function (v) { this.push(v) }, this);
-}
+  if (!utils.isArray(other_array)) return;
+  other_array.forEach(function (v) {
+    this.push(v);
+  }, this);
+};
 
 initializeListenerToMerchApp();
 // IOT HUB MESSANGE BROKER
@@ -38,7 +41,7 @@ Client.fromEnvironment(Transport, function (err, client) {
                 console.log('IoT Hub module client initialized, going to get coolerData');
                 
                 getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                // Send trigger bridge some stuff:                
+                // Send trigger bridge some stuff:
                 handleAdPlatform(client);
 
                 client.on('inputMessage', function (inputName, msg) {
@@ -104,13 +107,13 @@ function handleAdPlatform(client) {
             }
             
             // In any case, schedule another call to Ad-Platform:
-            setTimeout(() => { 
+            setTimeout(() => {
                 handleAdPlatform(client);
             }, getAdPlatformIntervalInMs);
         }, (err) => {
             logger.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
 
-            setTimeout(() => { 
+            setTimeout(() => {
                 handleAdPlatform(client);
             }, getAdPlatformIntervalInMs);
         });
@@ -127,6 +130,7 @@ function printResultFor(op) {
         }
     };
 }
+
 // IOT HUB MESSANGE BROKER
 
 const sendCoolerDataToMerchApp = function(coolerData) {
@@ -148,8 +152,11 @@ const getCoolerData = async function (isOnDemandCall = false) {
             logger.info(`coolerData was updated, will download assets and then send the file over to merchApp.`);
             await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData);
             logger.info('Downloaded all coolerData assets');
-
-            //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+            
+          // Get nutrition data for each product
+          nutritionDataService.getNutritionData(coolerData);
+          
+          //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
             sendCoolerDataToMerchApp(coolerData);
         } else {
