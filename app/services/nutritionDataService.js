@@ -1,6 +1,7 @@
 const { Connection, Request } = require("tedious");
 const path = require('path');
 const fs = require('fs');
+const utils = require('./utils');
 const logger = require('./logger');
 const config = require('./coolerCacheConfig');
 const merchAppSocket = require('./merchAppSocket');
@@ -111,6 +112,10 @@ const saveNutritionDataToDisk = function (nutritionData) {
     logger.error(`Error saving nutritionData: ${error}`);
   }
   
+}
+
+exports.nutritionDataExists = function () {
+  return utils.doesFileExist(nutritionDataFileFullPath);
 }
 
 // Create new db connection

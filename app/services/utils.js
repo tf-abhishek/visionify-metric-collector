@@ -29,6 +29,10 @@ exports.getFileLastModifiedTime = function (fileFullPath) {
     return stats.mtime.toUTCString();
 }
 
+exports.doesFileExist = function(fileFullPath) {
+    return fs.existsSync(fileFullPath);
+}
+
 exports.readTextFile = function(fileFullPath) {
     return fs.readFileSync(fileFullPath, 'utf8');
 }

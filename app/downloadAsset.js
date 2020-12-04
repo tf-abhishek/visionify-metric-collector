@@ -1,3 +1,4 @@
+const fs = require('fs');
 const logger = require('./services/logger');
 const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
@@ -160,6 +161,11 @@ const getCoolerData = async function (isOnDemandCall = false) {
             coolerDataService.saveCoolerDataToDisk(coolerData);
             sendCoolerDataToMerchApp(coolerData);
         } else {
+            if (!nutritionDataService.nutritionDataExists()) {
+                logger.info('Nutrition data file not present. Downloading now.')
+                nutritionDataService.getNutritionData(coolerData);
+            }
+            
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
             const downloaded = await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
             // To trigger merchApp refresh:
