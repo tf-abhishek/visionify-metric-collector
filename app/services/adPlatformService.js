@@ -64,6 +64,10 @@ exports.downloadAndSaveAdPlatformAssets = async function (adPlatformData, forceD
             logger.error(`Cannot interpret adType for campaign ${JSON.stringify(campaign)}`);
             return;
         }
+        if (campaign.AdProvider !== 'CSI') {
+            logger.info(`Non CSI campaign. No assets to download, hence skipping. CampaignID: ${campaign.CampaignId}, AdType: ${campaign.AdType}`);
+            continue;
+        }
         if (!campaign.Assets) {
             logger.warn(`Campaign has no assets: ${JSON.stringify(campaign)}`);
         }
