@@ -129,7 +129,7 @@ exports.getNutritionData = function (coolerData) {
     // Attempt to connect and execute queries if connection goes through
     connection.on("connect", err => {
       if (err) {
-        logger.error('Error while connection to DB', err.message);
+        logger.error('Error while connection to DB', err, err.message);
       } else {
         logger.info('Connected To Nutrition DB');
         queryNutritionDatabase(upcs, retailer);
