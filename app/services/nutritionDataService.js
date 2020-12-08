@@ -129,7 +129,12 @@ exports.getNutritionData = function (coolerData) {
     // Attempt to connect and execute queries if connection goes through
     connection.on("connect", err => {
       if (err) {
-        logger.error('Error while connection to DB', err, err.message);
+        logger.error(`Error while connection to DB: ${err} ${err.message}`);
+        logger.error(`Error, value config.nutritionDbUsername = ${config.nutritionDbUsername}`)
+        logger.error(`Error, value config.nutritionDbPassword = ${config.nutritionDbPassword}`)
+        logger.error(`Error, value config.nutritionDbServer = ${config.nutritionDbServer}`)
+        logger.error(`Error, value config.nutritionDbName = ${config.nutritionDbName}`)
+        
       } else {
         logger.info('Connected To Nutrition DB');
         queryNutritionDatabase(upcs, retailer);
@@ -137,6 +142,6 @@ exports.getNutritionData = function (coolerData) {
     });
   } catch (e) {
     connection.close();
-    logger.error('Error with db setup: ', e);
+    logger.error(`Error with db setup: ${e}`);
   }
 };
