@@ -154,16 +154,18 @@ const getCoolerData = async function (isOnDemandCall = false) {
             await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData);
             logger.info('Downloaded all coolerData assets');
             
-          // Get nutrition data for each product
-          nutritionDataService.getNutritionData(coolerData);
+            // Get nutrition data for each product
+            nutritionDataService.getNutritionData(coolerData);
           
-          //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
+            //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
             coolerDataService.saveCoolerDataToDisk(coolerData);
             sendCoolerDataToMerchApp(coolerData);
         } else {
             if (!nutritionDataService.nutritionDataExists()) {
                 logger.info('Nutrition data file not present. Downloading now.')
                 nutritionDataService.getNutritionData(coolerData);
+            } else {
+                logger.info('Nutrition data file present. No download needed');
             }
             
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
