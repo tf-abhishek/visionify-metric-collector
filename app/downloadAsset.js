@@ -4,6 +4,7 @@ const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
 const httpService = require('./services/httpService');
 const merchAppSocket = require('./services/merchAppSocket');
+const { setClient, sendMessageToModule } = require('./services/iotClient')
 const nutritionDataService = require('./services/nutritionDataService');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
@@ -39,26 +40,51 @@ Client.fromEnvironment(Transport, function (err, client) {
             if (err) {
                 throw err;
             } else {
+                setClient(client)
                 console.log('IoT Hub module client initialized, going to get coolerData');
-                
-                getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                // Send trigger bridge some stuff:
+
+                getCoolerData().then((data) => {
+                    console.log('Got cooler data, saved it and all!')
+                    console.log('sending downloadStatus message now.....................')
+                    sendMessageToModule('downloadStatus', {
+                        downloadStatus: true
+                    })
+                });
+                // Send trigger bridge some stuff:                
                 handleAdPlatform(client);
 
                 client.on('inputMessage', function (inputName, msg) {
                     console.log(`Entered inputMessage`);
                     logger.info(`Entered inputMessage`);
-                    
-                    if (inputName == "refreshCoolerData"){
+
+                    if (inputName == "refreshCoolerData") {
                         console.log(`Entered refreshCoolerData`);
-                        getCoolerData(true).then((data) => console.log('Got cooler data, saved it and all!'));
+                        getCoolerData(true).then((data) => {
+                            console.log('Got cooler data, saved it and all!')
+                            console.log('sending downloadStatus message now.....................')
+                            sendMessageToModule('downloadStatus', {
+                                downloadStatus: true
+                            })
+                        });
                         console.log('Direct Method is called to update CoolerData.json file');
                     }
 
-                    if (inputName == "refreshNEID"){
+                    if (inputName == "refreshNEID") {
                         console.log(`Entered refreshNEID`);
                         const _neid = httpService.getNEID(true);
+                        // set neid after update
+                        coolerDataService.setNeid(_neid);
                         console.log(`Direct Method is called to update NEID: ${_neid}`);
+                        sendMessageToModule('downloadStatus', {
+                            downloadStatus: false
+                        })
+                        getCoolerData(true).then((data) => {
+                            console.log('Got cooler data, saved it and all!')
+                            console.log('sending downloadStatus message now.....................')
+                            sendMessageToModule('downloadStatus', {
+                                downloadStatus: true
+                            })
+                        });
                     }
                 });
             }
@@ -87,7 +113,7 @@ function initializeListenerToMerchApp() {
 
 function handleAdPlatform(client) {
     logger.info('Requesting Ad-Platform data');
-    
+
     adPlatformService.getAdPlatformData().then(
         (data) => {
             if (data !== adPlatformService.adPlatformNothingChanged) {
@@ -98,7 +124,7 @@ function handleAdPlatform(client) {
                             'playListData',
                             new Message(JSON.stringify(data)),
                             printResultFor('Sent TriggerBridge assets'));
-                            logger.info(`Sent AdPlatform JSON to TriggerBridge`);
+                        logger.info(`Sent AdPlatform JSON to TriggerBridge`);
                     });
             } else {
                 logger.info('Looks like adPlatformData did not change since last time. Will just verify assets are in-place and complete.');
@@ -106,7 +132,7 @@ function handleAdPlatform(client) {
 
                 adPlatformService.downloadAndSaveAdPlatformAssets(adPlatformData, false);
             }
-            
+
             // In any case, schedule another call to Ad-Platform:
             setTimeout(() => {
                 handleAdPlatform(client);
@@ -134,7 +160,7 @@ function printResultFor(op) {
 
 // IOT HUB MESSANGE BROKER
 
-const sendCoolerDataToMerchApp = function(coolerData) {
+const sendCoolerDataToMerchApp = function (coolerData) {
     if (JSON.stringify(coolerData) != JSON.stringify(prevCoolerData)) {
         console.log(`Will send updated cooler data to merchapp`);//: \n${JSON.stringify(coolerData)}\n\n`);
         merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
@@ -183,8 +209,7 @@ const getCoolerData = async function (isOnDemandCall = false) {
         logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
     }
 
-    if(!isOnDemandCall)
-    {
+    if (!isOnDemandCall) {
         setTimeout(async () => {
             await getCoolerData();
         }, getCoolerDataIntervalInMs);

@@ -122,6 +122,12 @@ async function getNeid() {
     return _neid;
 }
 
+exports.setNeid = async function (updatedNeid) {
+    if (updatedNeid) {
+        _neid = updatedNeid;
+    }
+}
+
 async function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
     if (_assetCategoryToDirectoryDictionary !== undefined) return _assetCategoryToDirectoryDictionary;
     _assetCategoryToDirectoryDictionary = {};
