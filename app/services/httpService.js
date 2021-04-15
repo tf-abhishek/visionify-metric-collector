@@ -14,7 +14,8 @@ exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, direc
     await retry(async bail => {
         downloaded = await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince) || downloaded;
     }, {
-        retries: 5,
+        minTimeout: 10000,
+        retries: 10,
         onRetry: (err) => logger.warn(`Will retry error [${err}]`)
     });
 
@@ -60,6 +61,7 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
         }
 
         if (contentLength) {
+            logger.info(`Create .size file ${assetFileSizeFullPath}. Size: ${contentLength} bytes.`);
             fs.writeFileSync(assetFileSizeFullPath, contentLength);
         }
 
