@@ -30,7 +30,7 @@ Date.MIN_VALUE = new Date(-8640000000000000);
 
 async function init() {
     await getDeviceDetails();
-    logger.info('Starting metrics endpoint');
+    logger.info('Starting metrics endpoint in GET /metrics');
     app.listen(_config.api.port);
 }
 
