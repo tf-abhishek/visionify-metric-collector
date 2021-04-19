@@ -15,40 +15,53 @@ const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
 var prevCoolerData = '';
 
-Date.MIN_VALUE = new Date(-8640000000000000);
-Array.prototype.extend = function (other_array) {
-    if (!utils.isArray(other_array)) return;
-    other_array.forEach(function (v) { this.push(v) }, this);
-}
+const _config = require('./config.json')
+const { device, api } = require('./helpers')
+const { app } = api
+global.defaultMetadata = { 
+    module: 'coolerCache' 
+};
 
-initializeListenerToMerchApp();
-initializeEdgeHubClient();
+Date.MIN_VALUE = new Date(-8640000000000000);
+//Array.prototype.extend = function (other_array) {
+//    if (!utils.isArray(other_array)) return;
+//    other_array.forEach(function (v) { this.push(v) }, this);
+//}
+
+async function init() {
+    await getDeviceDetails();
+    logger.info('Starting metrics endpoint');
+    app.listen(_config.api.port);
+}
 
 function initializeEdgeHubClient() {
     // IOT HUB MESSANGE BROKER
-    Client.fromEnvironment(Transport, function (err, client) {
-        if (err) {
-            throw err;
-        } else {
-            client.on('error', function (err) {
-                throw err;
-            });
+    return new Promise((resolve, reject) => {
+        Client.fromEnvironment(Transport, function (err, client) {
+            if (err) {
+                reject(err);
+            } else {
+                client.on('error', function (err) {
+                    reject(err);
+                });
 
-            // connect to the Edge instance
-            client.open(function (err) {
-                if (err) {
-                    throw err;
-                } else {
-                    console.log('IoT Hub module client initialized, going to get coolerData');
-                    
-                    getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                    // Send trigger bridge some stuff:                
-                    handleAdPlatform(client);
+                // connect to the Edge instance
+                client.open(function (err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        console.log('IoT Hub module client initialized, going to get coolerData');
 
-                    handleSkinBuilder();
-                }
-            });
-        }
+                        getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
+                        // Send trigger bridge some stuff:                
+                        handleAdPlatform(client);
+
+                        handleSkinBuilder();
+                        resolve();
+                    }
+                });
+            }
+        });
     });
 }
 
@@ -69,6 +82,15 @@ function initializeListenerToMerchApp() {
             for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`)
         }
     }
+}
+
+const getDeviceDetails = async () => {
+    [neid, hostname] = await Promise.all([device.getNEID(), device.getHostname()]);
+    global.defaultMetadata = { 
+        ...global.defaultMetadata,
+        neid, hostname, 
+    };
+    logger.info(`setting NEID: [${neid}] and hostname: [${hostname}]`);
 }
 
 function handleAdPlatform(client) {
@@ -182,7 +204,6 @@ const getCoolerData = async function () {
     }, getCoolerDataIntervalInMs);
 }
 
-
 //getCoolerData().then((data) => console.log('Finished!'));
 //adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
 //handleSkinBuilder().then((a) => console.log('Finished skin stuff'));
@@ -191,4 +212,10 @@ process.on('uncaughtException', err => {
     // TODO: Send telemetry of that exception
     console.error(err);
     process.exit(1);
-  });
+});
+
+(async () => {
+    initializeListenerToMerchApp();
+    await initializeEdgeHubClient();
+    await init();
+})();
