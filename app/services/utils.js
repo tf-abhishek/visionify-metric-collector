@@ -31,6 +31,7 @@ exports.getFileLastModifiedTime = function (fileFullPath) {
     try {
         stats = fs.statSync(fileFullPath);
     } catch (error) {
+        logger.error(error, true);
         return Date.MIN_VALUE;
     }
 
@@ -122,6 +123,6 @@ function createDirSync(dirPath) {
     try {
         fs.mkdirSync(dirPath, { recursive: true });
     } catch (error) {
-        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
+        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`, true)
     }
 }

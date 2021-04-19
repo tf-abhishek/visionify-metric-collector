@@ -79,7 +79,7 @@ function initializeListenerToMerchApp() {
         } else {
             // TODO: A metric to fire; this is of very high importance.
             logger.error(`Fatal error; Could not initiate socket listener on port ${merchAppSocket.listeningPort}
-            for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`)
+            for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`, true)
         }
     }
 }
@@ -152,7 +152,7 @@ async function handleSkinBuilder() {
             logger.info('No new skin to update');
         }
     } catch (error) {
-        logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`);
+        logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`, true);
     }
     
     setTimeout(async () => {
@@ -196,7 +196,7 @@ const getCoolerData = async function () {
 
     } catch (error) {
         const stack = error.stack ? error.stack.split("\n") : '';
-        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
+        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`, true)
     }
 
     setTimeout(async () => {

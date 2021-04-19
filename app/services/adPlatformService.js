@@ -131,7 +131,7 @@ let adPlatformUrl;
             }
         } else {
             const stack = error.stack ? error.stack.split("\n") : '';
-            logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`);
+            logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`, true);
         }
     }
 }

@@ -25,7 +25,7 @@ exports.downloadSkinIfUpdated = async function () {
         try {
             await decompress();
         } catch (error) {
-            logger.error(`Could not decompress skin file at ${_skinBuilderUrl}. [${error}]. Will rename to ${_skinCorruptFilename}`);
+            logger.error(`Could not decompress skin file at ${_skinBuilderUrl}. [${error}]. Will rename to ${_skinCorruptFilename}`, error);
             
             // If we couldn't decompress, archive is probably corrupt. First, delete the old corrupt file, if exists:
             // await safelyDeleteOldCorruptArchive();
@@ -55,7 +55,7 @@ async function safelyDeleteOldCorruptArchive() {
         if(unlinkError && unlinkError.code == 'ENOENT') { 
             logger.info(`Nothing to delete at ${_skinCorruptFilePath}`);
         } else {
-            logger.error(`Could not delete existing corrupt file at ${_skinCorruptFilePath}: [${unlinkError}].`);
+            logger.error(`Could not delete existing corrupt file at ${_skinCorruptFilePath}: [${unlinkError}].`, error);
         }
     }
 }
@@ -64,7 +64,7 @@ async function safelyRenameArchive() {
     try {
         await fsAsync.rename(_skinCompressedFilePath, _skinCorruptFilePath);
     } catch (renameError) {
-        logger.error(`Could not rename existing corrupt file from ${_skinCompressedFilePath} to ${_skinCorruptFilePath}: [${renameError}].`);
+        logger.error(`Could not rename existing corrupt file from ${_skinCompressedFilePath} to ${_skinCorruptFilePath}: [${renameError}].`, true);
     }
 }
 
@@ -77,7 +77,7 @@ async function safelyRenamePreviousSkinDir() {
         if(error && error.code == 'ENOENT') { 
             logger.info(`Nothing to rename at ${_storageLocalSkinDecompressedDir}`);
         } else {
-            logger.error(`Could not rename existing corrupt file from ${_skinCompressedFilePath} to ${_skinCorruptFilePath}: [${error}].`);
+            logger.error(`Could not rename existing corrupt file from ${_skinCompressedFilePath} to ${_skinCorruptFilePath}: [${error}].`, true);
         }
     }
 }
