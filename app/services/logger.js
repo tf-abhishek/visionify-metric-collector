@@ -3,8 +3,14 @@ const moment = require('moment-timezone');
 require('winston-daily-rotate-file');
 //const env = process.env.NODE_ENV;
 const { combine, printf } = format;
-
 const timestamp = () => moment().tz('America/Chicago').format('YYYY-MM-DD HH:mm:ss');
+
+const { metrics } = require('./../helpers/helpers');
+const actionCounter = metrics().counter({
+    name: 'action_error_counter',
+    help: 'error counter metric',
+    labelNames: ['action_type'],
+});
 
 const myFormat = printf(info => {
     return `${timestamp()} - [${info.level}] : ${info.message}`;
@@ -31,7 +37,7 @@ if (env === 'PROD') {
   logLevel = process.env.loglevel || 'error';
 }*/
 
-let logger = createLogger({
+let loggerClient = createLogger({
     level: logLevel,
     format: combine(
         myFormat
@@ -42,14 +48,45 @@ let logger = createLogger({
     ]
 });
 
-logger.stream = {
+loggerClient.stream = {
     write: function (message, encoding) {
         logger.info(message);
     },
 };
-logger.exceptions.handle(
+loggerClient.exceptions.handle(
     new transports.File({ filename: 'CC-unhandledExceptions.log' })
 );
-logger.exitOnError = false;
+loggerClient.exitOnError = false;
+
+const logger = {
+    error: (text, isException = false) => {
+        if (isException) {
+            actionCounter.inc({
+                action_type: 'error_exception_logs'
+            })
+        } else {
+          actionCounter.inc({
+            action_type: 'error_logs'
+          })
+        }
+        let strText = typeof text === 'object' ? JSON.stringify(text) : text
+        loggerClient.error(strText)
+    },
+    info: (text) => {
+        loggerClient.info(text)
+    },
+    debug: (text) => {
+        loggerClient.debug(text)
+    },
+    warn: (text) => {
+        actionCounter.inc({
+            action_type: 'warning_logs'
+        })
+        loggerClient.warn(text)
+    },
+    silly: (text) => {
+        loggerClient.silly(text)
+    },
+  }
 
 module.exports = logger;

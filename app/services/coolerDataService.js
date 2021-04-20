@@ -63,7 +63,7 @@ exports.saveCoolerDataToDisk = function (coolerData) {
             { flag: 'w+' });
         logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
     } catch (error) {
-        logger.error(`Error saving coolerData: ${err}`);
+        logger.error(`Error saving coolerData: ${err}`, true);
     }
 
     /*fs.writeFile(coolerDataFileFullPath,

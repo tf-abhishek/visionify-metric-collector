@@ -15,40 +15,50 @@ const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
 var prevCoolerData = '';
 
+const _config = require('./config.json')
+const { device, api } = require('./helpers')
+const { app } = api
+
 Date.MIN_VALUE = new Date(-8640000000000000);
 Array.prototype.extend = function (other_array) {
     if (!utils.isArray(other_array)) return;
     other_array.forEach(function (v) { this.push(v) }, this);
 }
 
-initializeListenerToMerchApp();
-initializeEdgeHubClient();
+async function init() {
+    await device.getDeviceDetails();
+    logger.info('Starting metrics endpoint in GET /metrics');
+    app.listen(_config.api.port);
+}
 
 function initializeEdgeHubClient() {
     // IOT HUB MESSANGE BROKER
-    Client.fromEnvironment(Transport, function (err, client) {
-        if (err) {
-            throw err;
-        } else {
-            client.on('error', function (err) {
-                throw err;
-            });
+    return new Promise((resolve, reject) => {
+        Client.fromEnvironment(Transport, function (err, client) {
+            if (err) {
+                reject(err);
+            } else {
+                client.on('error', function (err) {
+                    reject(err);
+                });
 
-            // connect to the Edge instance
-            client.open(function (err) {
-                if (err) {
-                    throw err;
-                } else {
-                    console.log('IoT Hub module client initialized, going to get coolerData');
-                    
-                    getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                    // Send trigger bridge some stuff:                
-                    handleAdPlatform(client);
+                // connect to the Edge instance
+                client.open(function (err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        console.log('IoT Hub module client initialized, going to get coolerData');
 
-                    handleSkinBuilder();
-                }
-            });
-        }
+                        getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
+                        // Send trigger bridge some stuff:                
+                        handleAdPlatform(client);
+
+                        handleSkinBuilder();
+                        resolve();
+                    }
+                });
+            }
+        });
     });
 }
 
@@ -66,7 +76,7 @@ function initializeListenerToMerchApp() {
         } else {
             // TODO: A metric to fire; this is of very high importance.
             logger.error(`Fatal error; Could not initiate socket listener on port ${merchAppSocket.listeningPort}
-            for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`)
+            for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`, true)
         }
     }
 }
@@ -130,7 +140,7 @@ async function handleSkinBuilder() {
             logger.info('No new skin to update');
         }
     } catch (error) {
-        logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`);
+        logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`, true);
     }
     
     setTimeout(async () => {
@@ -174,14 +184,13 @@ const getCoolerData = async function () {
 
     } catch (error) {
         const stack = error.stack ? error.stack.split("\n") : '';
-        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
+        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`, true)
     }
 
     setTimeout(async () => {
         await getCoolerData();
     }, getCoolerDataIntervalInMs);
 }
-
 
 //getCoolerData().then((data) => console.log('Finished!'));
 //adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
@@ -191,4 +200,10 @@ process.on('uncaughtException', err => {
     // TODO: Send telemetry of that exception
     console.error(err);
     process.exit(1);
-  });
+});
+
+(async () => {
+    initializeListenerToMerchApp();
+    await initializeEdgeHubClient();
+    await init();
+})();
