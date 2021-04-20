@@ -18,9 +18,6 @@ var prevCoolerData = '';
 const _config = require('./config.json')
 const { device, api } = require('./helpers')
 const { app } = api
-global.defaultMetadata = { 
-    module: 'coolerCache' 
-};
 
 Date.MIN_VALUE = new Date(-8640000000000000);
 //Array.prototype.extend = function (other_array) {
@@ -29,7 +26,7 @@ Date.MIN_VALUE = new Date(-8640000000000000);
 //}
 
 async function init() {
-    await getDeviceDetails();
+    await device.getDeviceDetails();
     logger.info('Starting metrics endpoint in GET /metrics');
     app.listen(_config.api.port);
 }
@@ -82,15 +79,6 @@ function initializeListenerToMerchApp() {
             for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`, true)
         }
     }
-}
-
-const getDeviceDetails = async () => {
-    [neid, hostname] = await Promise.all([device.getNEID(), device.getHostname()]);
-    global.defaultMetadata = { 
-        ...global.defaultMetadata,
-        neid, hostname, 
-    };
-    logger.info(`setting NEID: [${neid}] and hostname: [${hostname}]`);
 }
 
 function handleAdPlatform(client) {

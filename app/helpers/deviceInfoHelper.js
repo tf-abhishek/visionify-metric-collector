@@ -29,7 +29,18 @@ const getNEID = async () => {
 
 const getHostname = () => os.hostname()
 
+const getDeviceDetails = async () => {
+  const [neid, hostname] = await Promise.all([device.getNEID(), device.getHostname()]);
+  global.defaultMetadata = { 
+      ...global.defaultMetadata,
+      neid, hostname, 
+  };
+  logger.info(`setting NEID: [${neid}] and hostname: [${hostname}]`);
+  return  [neid, hostname]
+}
+
 module.exports = {
     getNEID,
-    getHostname
+    getHostname,
+    getDeviceDetails,
 };
