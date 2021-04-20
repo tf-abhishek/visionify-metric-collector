@@ -17,19 +17,19 @@ const myFormat = printf(info => {
 });
 const logFilePath = process.env.logfilepath || './logs';
 
-//const rotateFileTransport = new (transports.DailyRotateFile)({
-//    filename: `${logFilePath}/CoolerCache-%DATE%.log`,
-//    datePattern: 'YYYY-MM-DD',
-//    zippedArchive: true,
-//    maxSize: '20m',
-//    maxFiles: '14d',
-//    timestamp: true,
-//});
+const rotateFileTransport = new (transports.DailyRotateFile)({
+    filename: `${logFilePath}/CoolerCache-%DATE%.log`,
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    timestamp: true,
+});
 
-//const etransports = {
-//    console: new (transports.Console)({ 'timestamp': true }),
-//    rotateFile: rotateFileTransport
-//};
+const etransports = {
+    console: new (transports.Console)({ 'timestamp': true }),
+    rotateFile: rotateFileTransport
+};
 
 let logLevel = process.env.loglevel || 'info';
 /* Set logging level to error if Production deployment 
@@ -42,21 +42,21 @@ let loggerClient = createLogger({
     format: combine(
         myFormat
     ),
-//    transports: [
-//        etransports.console,
-//        etransports.rotateFile
-//    ]
+    transports: [
+        etransports.console,
+        etransports.rotateFile
+    ]
 });
 
-//loggerClient.stream = {
-//    write: function (message, encoding) {
-//        logger.info(message);
-//    },
-//};
-//loggerClient.exceptions.handle(
-//    new transports.File({ filename: 'CC-unhandledExceptions.log' })
-//);
-//loggerClient.exitOnError = false;
+loggerClient.stream = {
+    write: function (message, encoding) {
+        logger.info(message);
+    },
+};
+loggerClient.exceptions.handle(
+    new transports.File({ filename: 'CC-unhandledExceptions.log' })
+);
+loggerClient.exitOnError = false;
 
 const logger = {
     error: (text, isException = false) => {
