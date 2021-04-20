@@ -20,10 +20,10 @@ const { device, api } = require('./helpers')
 const { app } = api
 
 Date.MIN_VALUE = new Date(-8640000000000000);
-//Array.prototype.extend = function (other_array) {
-//    if (!utils.isArray(other_array)) return;
-//    other_array.forEach(function (v) { this.push(v) }, this);
-//}
+Array.prototype.extend = function (other_array) {
+    if (!utils.isArray(other_array)) return;
+    other_array.forEach(function (v) { this.push(v) }, this);
+}
 
 async function init() {
     await device.getDeviceDetails();

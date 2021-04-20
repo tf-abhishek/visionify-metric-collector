@@ -25,7 +25,7 @@ exports.downloadSkinIfUpdated = async function () {
         try {
             await decompress();
         } catch (error) {
-            logger.error(`Could not decompress skin file at ${_skinBuilderUrl}. [${error}]. Will rename to ${_skinCorruptFilename}`, error);
+            logger.error(`Could not decompress skin file at ${_skinBuilderUrl}. [${error}]. Will rename to ${_skinCorruptFilename}`, true);
             
             // If we couldn't decompress, archive is probably corrupt. First, delete the old corrupt file, if exists:
             // await safelyDeleteOldCorruptArchive();
@@ -55,7 +55,7 @@ async function safelyDeleteOldCorruptArchive() {
         if(unlinkError && unlinkError.code == 'ENOENT') { 
             logger.info(`Nothing to delete at ${_skinCorruptFilePath}`);
         } else {
-            logger.error(`Could not delete existing corrupt file at ${_skinCorruptFilePath}: [${unlinkError}].`, error);
+            logger.error(`Could not delete existing corrupt file at ${_skinCorruptFilePath}: [${unlinkError}].`, true);
         }
     }
 }
