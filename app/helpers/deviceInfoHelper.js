@@ -30,7 +30,7 @@ const getNEID = async () => {
 const getHostname = () => os.hostname()
 
 const getDeviceDetails = async () => {
-  const [neid, hostname] = await Promise.all([device.getNEID(), device.getHostname()]);
+  const [neid, hostname] = await Promise.all([getNEID(), getHostname()]);
   global.defaultMetadata = { 
       ...global.defaultMetadata,
       neid, hostname, 
