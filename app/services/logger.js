@@ -3,8 +3,14 @@ const moment = require('moment-timezone');
 require('winston-daily-rotate-file');
 //const env = process.env.NODE_ENV;
 const { combine, printf } = format;
-
 const timestamp = () => moment().tz('America/Chicago').format('YYYY-MM-DD HH:mm:ss');
+
+const { metrics } = require('./helpers');
+const actionCounter = metrics().counter({
+    name: 'action_error_counter',
+    help: 'error counter metric',
+    labelNames: ['action_type'],
+});
 
 const myFormat = printf(info => {
     return `${timestamp()} - [${info.level}] : ${info.message}`;
