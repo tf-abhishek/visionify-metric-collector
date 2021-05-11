@@ -1,3 +1,5 @@
+import { isEmpty } from 'lodash';
+
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -135,6 +137,20 @@ exports.toUnconfidentialUrl = function (url) {
     return url.split('?')[0];
 }
 
+/**
+ * @description extract adaptablepricetag flag 
+ * @param {object} coolerData
+ * @returns {object} tagsEnabled
+*/
+exports.getAdaptableTagsEnabled = (coolerData) => {
+    let tagsEnabled = false;
+
+    if (!isEmpty(coolerData) && coolerData.adaptablepricetag) {
+        tagsEnabled = coolerData.adaptablepricetag === 'Y';
+    }
+    return tagsEnabled;
+};
+
 function createDirSync(dirPath) {
     try {
         fs.mkdirSync(dirPath, { recursive: true });
@@ -142,3 +158,5 @@ function createDirSync(dirPath) {
         logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
     }
 }
+
+

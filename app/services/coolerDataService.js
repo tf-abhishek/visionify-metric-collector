@@ -103,7 +103,7 @@ exports.downloadAndSaveAssetsIfNeeded = async function (coolerData, forceDownloa
     createDirectoriesForAssets();
 
     const allImagesDictionary = getAllDirsToFilenamesDictionary(coolerData);
-    const assetCategoryToDirectoryAndBaseUrlDictionary = await getAssetCategoryToDirectoryAndBaseUrlDictionary();
+    const assetCategoryToDirectoryAndBaseUrlDictionary = await getAssetCategoryToDirectoryAndBaseUrlDictionary(coolerData);
 
     let downloaded = false;
     for (var assetCategory in allImagesDictionary) {
@@ -134,11 +134,11 @@ exports.setNeid = async function (updatedNeid) {
     }
 }
 
-async function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
+async function getAssetCategoryToDirectoryAndBaseUrlDictionary(coolerData) {
     if (_assetCategoryToDirectoryDictionary !== undefined) return _assetCategoryToDirectoryDictionary;
     _assetCategoryToDirectoryDictionary = {};
 
-    const productImagesUrl = await getProductImagesUrl();
+    const productImagesUrl = await getProductImagesUrl(coolerData);
     _assetCategoryToDirectoryDictionary[_productsAssetKey] = [_storageLocalProductsImagesDir, productImagesUrl];
     _assetCategoryToDirectoryDictionary[_labelsAssetKey] = [_storageLocalLabelsImagesDir, _labelsImagesUrl];
     _assetCategoryToDirectoryDictionary[_tagsAssetKey] = [_storageLocalTagsImagesDir, _tagsImagesUrl];
@@ -146,10 +146,16 @@ async function getAssetCategoryToDirectoryAndBaseUrlDictionary() {
     return _assetCategoryToDirectoryDictionary;
 }
 
-async function getProductImagesUrl() {
+async function getProductImagesUrl(coolerData) {
     const neid = await getNeid();
+    const upcEnabled = utils.getAdaptableTagsEnabled(coolerData);
 
-    return getFromDictionary(neid, retailerToProductsUrlMap, "product assets");
+    if (upcEnabled)  {
+        return config.universalPlangramImageStorageUrl;
+    }
+    else {
+        return getFromDictionary(neid, retailerToProductsUrlMap, "product assets");
+    }
 }
 
 async function getCoolerDataUrl() {
