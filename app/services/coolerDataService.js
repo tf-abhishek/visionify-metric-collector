@@ -151,10 +151,13 @@ async function getProductImagesUrl(coolerData) {
     const upcEnabled = utils.getAdaptableTagsEnabled(coolerData);
 
     if (upcEnabled)  {
+        logger.info(`Using UPC image store: ${config.universalPlangramImageStorageUrl}`);
         return config.universalPlangramImageStorageUrl;
     }
     else {
-        return getFromDictionary(neid, retailerToProductsUrlMap, "product assets");
+        const url = getFromDictionary(neid, retailerToProductsUrlMap, "product assets");
+        logger.info(`Using retailer image store: ${config.universalPlangramImageStorageUrl}`);
+        return url;
     }
 }
 

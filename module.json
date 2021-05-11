@@ -4,7 +4,7 @@
     "image": {
         "repository": "csicontainers.azurecr.io/cooler-cache-arm",
         "tag": {
-            "version": "0.0.4",
+            "version": "1.0.4",
             "platforms": {
                 "amd64": "./Dockerfile",
                 "arm64v8": "./Dockerfile.arm64v8"

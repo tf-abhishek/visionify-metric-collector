@@ -1,5 +1,4 @@
-import { isEmpty } from 'lodash';
-
+const { isEmpty } = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
@@ -142,7 +141,7 @@ exports.toUnconfidentialUrl = function (url) {
  * @param {object} coolerData
  * @returns {object} tagsEnabled
 */
-exports.getAdaptableTagsEnabled = (coolerData) => {
+exports.getAdaptableTagsEnabled = function (coolerData) {
     let tagsEnabled = false;
 
     if (!isEmpty(coolerData) && coolerData.adaptablepricetag) {
