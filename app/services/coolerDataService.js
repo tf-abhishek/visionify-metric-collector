@@ -23,18 +23,24 @@ const retailerToProductsUrlMap = {
     'WBA': 'https://coolerassets.blob.core.windows.net/planogram-images-haw/',
     'LCL': 'https://coolerassets.blob.core.windows.net/planogram-images-map/',
     'GGO': 'https://coolerassets.blob.core.windows.net/planogram-images-gg/',
-    'KRO': 'https://coolerassets.blob.core.windows.net/planogram-images-kro/'
+    'KRO': 'https://coolerassets.blob.core.windows.net/planogram-images-kro/',
+    'WMT': 'https://coolerassets.blob.core.windows.net/planogram-images-wmt/',
+    'CSD': 'https://coolerassets.blob.core.windows.net/planogram-images-csd/'
 };
 const retailerToCoolerDataUrlMap = {
     'WBA': _coolerPath,
     'GGO': _coolerPath,
     'KRO': _coolerPath,
+    'WMT': _coolerPath,
+    'CSD': _coolerPath,
     'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
 }
 const retailerToCoolerDataUrlSuffixMap = {
     'WBA': '',
     'GGO': '',
     'KRO': '',
+    'WMT': '',
+    'CSD': '',
     'LCL': '/planomap'
 }
 var _assetCategoryToDirectoryDictionary = undefined;
@@ -120,6 +126,12 @@ async function getNeid() {
     }
 
     return _neid;
+}
+
+exports.setNeid = async function (updatedNeid) {
+    if (updatedNeid) {
+        _neid = updatedNeid;
+    }
 }
 
 async function getAssetCategoryToDirectoryAndBaseUrlDictionary() {

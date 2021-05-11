@@ -54,7 +54,7 @@ exports.initialize = function () {
     }*/
     socket.on("disconnect", () => {
       _coolerDataAsked = false;
-      _socket = undefined;
+      // _socket = undefined;
       logger.info(`Client gone [id=${socket.id}]`);
     });
   });
@@ -76,12 +76,16 @@ exports.sendMerchAppNutritionData = function (nutritionData) {
 };
 
 exports.sendMerchAppCoolerDataUpdate = function (coolerData) {
-  if (_socket) { //&& _coolerDataAsked)
-    logger.info(`Sending merchApp a coolerData update`);
-    _server.emit(coolerDataUpdatedKey, coolerData);
-  } else {
-    _coolerData = coolerData;
-    logger.warn('Socket was not yet established when trying to send merchApp a coolerData update.'
-      + ' Will send a coolerData update when connection is established from merchApp.');
+  try {
+    if (_socket) { //&& _coolerDataAsked)
+      logger.info(`Sending merchApp a coolerData update`);
+      _server.volatile.emit(coolerDataUpdatedKey, coolerData);
+    } else {
+      _coolerData = coolerData;
+      logger.warn('Socket was not yet established when trying to send merchApp a coolerData update.'
+        + ' Will send a coolerData update when connection is established from merchApp.');
+    }
+  } catch (error) {
+    logger.warn('error in sendMerchAppCoolerDataUpdate ::', error);
   }
 };
