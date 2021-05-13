@@ -16,6 +16,19 @@ const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
 var prevCoolerData = '';
 
+const { api } = require('./helpers')
+const { app } = api;
+app.listen(8080);
+
+
+
+const { metrics } = require('./helpers/helpers');
+const actionCounter = metrics().counter({
+    name: 'action__counter_ad_platform',
+    help: 'counter metric',
+    labelNames: ['action_type'],
+});
+
 Date.MIN_VALUE = new Date(-8640000000000000);
 Array.prototype.extend = function (other_array) {
   if (!utils.isArray(other_array)) return;
@@ -87,7 +100,9 @@ function initializeListenerToMerchApp() {
 
 function handleAdPlatform(client) {
     logger.info('Requesting Ad-Platform data');
-    
+    actionCounter.inc({
+        action_type: 'ad_platform_campaign_requests'
+    });
     adPlatformService.getAdPlatformData().then(
         (data) => {
             if (data !== adPlatformService.adPlatformNothingChanged) {
@@ -113,7 +128,9 @@ function handleAdPlatform(client) {
             }, getAdPlatformIntervalInMs);
         }, (err) => {
             logger.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
-
+            actionCounter.inc({
+                action_type: 'ad_platform_campaign_requests_failed'
+            });
             setTimeout(() => {
                 handleAdPlatform(client);
             }, getAdPlatformIntervalInMs);

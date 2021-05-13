@@ -3,6 +3,13 @@ const path = require('path');
 const config = require('./coolerCacheConfig');
 const logger = require('./logger');
 const utils = require('./utils');
+const { metrics } = require('../helpers/helpers');
+
+const actionCounter = metrics().counter({
+  name: 'action__counter_nutrition_data',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
 const listeningPort = process.env.merchappsocketport || config.merchAppListenPort;
 const coolerDataUpdatedKey = 'coolerDataUpdated';
 const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);
@@ -36,6 +43,9 @@ exports.initialize = function () {
       logger.info(`Received a 'nutritionData' from merchApp. Will send last nutritionData'`);
       const nutritionDataToSend = _nutritionData || utils.readTextFile(nutritionDataFileFullPath);
       _server.emit(nutritionDataKey, nutritionDataToSend);
+      actionCounter.inc({
+        action_type: 'nutrition_record_returned'
+      }); 
     });
     
     /*if (_coolerData) {

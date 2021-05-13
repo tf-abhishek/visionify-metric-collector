@@ -9,14 +9,30 @@ const retry = require('async-retry')
 const fileSizeSuffix = 'size';
 let _neid = '';
 
+const { metrics } = require('../helpers/helpers');
+
+const actionCounter = metrics().counter({
+    name: 'action__counter',
+    help: 'counter metric',
+    labelNames: ['action_type'],
+});
+
 exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince = true) {
     let downloaded = false;
     await retry(async bail => {
+        actionCounter.inc({
+            action_type: 'asset_requests'
+        });
         downloaded = await downloadAssetInternal(downloadUrl, assetFilename, directoryPathToSaveTo, onlyIfModifiedSince) || downloaded;
     }, {
         minTimeout: 10000,
         retries: 10,
-        onRetry: (err) => logger.warn(`Will retry error [${err}]`)
+        onRetry: (err) => {
+            logger.warn(`Will retry error [${err}]`)
+            actionCounter.inc({
+                action_type: 'asset_requests_retry'
+            });
+        }
     });
 
     return downloaded;
@@ -69,6 +85,9 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
         // TODO: if error - put in a "poison" list to retry later/whenever.
     }
     catch (error) {
+        actionCounter.inc({
+            action_type: 'asset_requests_failed'
+        });
         if (error && error.response) { // HTTP error
             if (error.response.status === 304) {
                 // Not an error:
@@ -131,18 +150,29 @@ async function getNeidFromLocationApi(){
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
         logger.info(`Getting NEID for device from: ${neidUrl}`);
         response = await axios.get(neidUrl);
+        actionCounter.inc({
+            action_type: 'location_manager_requests'
+        });
     } catch (error) {
         logger.warn(`Error getting NEID for device ${os.hostname()}: [${error}]. Will try to read from file, if exists`);
-
+        actionCounter.inc({
+            action_type: 'location_manager_requests_failed'
+        });
         return utils.readNeidFileIfExists(); 
     }
 
     if (!response.data || !response.data.data || !response.data.data.assets){
+        actionCounter.inc({
+            action_type: 'location_manager_requests_fail_state'
+        });
         throw new Error(`Error getting NEID for device ${os.hostname()}, returned response is in incorrect
         format or does not contain expected data: [${response.data}]`);
     }
 
     if (utils.isEmptyArray(response.data.data.assets)) {
+        actionCounter.inc({
+            action_type: 'location_manager_requests_fail_state'
+        });
         throw new Error(`Got empty results for NEID for device ${os.hostname()}`);
     }
 

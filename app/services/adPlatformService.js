@@ -7,6 +7,12 @@ const logger = require('./logger');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios').default;
+const { metrics } = require('../helpers/helpers');
+const actionCounter = metrics().counter({
+  name: 'action__counter_Campaign',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
 
 const _storageLocalAdPlatformDataDir = _adPlatformConfig.coolerCacheRootFolder;
 const _adPlatformDataFilename = 'adPlatformData.json';
@@ -143,7 +149,9 @@ exports.getAdPlatformData = async function (forceDownload = false) {
       path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
     const getHeaders = forceDownload ? {} : getAdPlatformRequestHeaders(adPlatformDataLastModified);
     adPlatformUrl = await buildAdPlatformGetUrl();
-    
+    actionCounter.inc({
+      action_type: 'ad_platform_campaign'
+  });
     const adPlatformDataResponse = await axios.get(adPlatformUrl, {
       headers: getHeaders,
     });

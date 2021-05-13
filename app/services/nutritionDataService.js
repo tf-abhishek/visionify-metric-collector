@@ -5,6 +5,14 @@ const utils = require('./utils');
 const logger = require('./logger');
 const config = require('./coolerCacheConfig');
 const merchAppSocket = require('./merchAppSocket');
+
+const { metrics } = require('../helpers/helpers');
+const actionCounter = metrics().counter({
+  name: 'action__counter_nutrition_data_',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
+
 const nutritionDataFileFullPath = path.join(config.coolerCacheRootFolder, 'nutritionData.json');
 const MACRO_DICTIONARY = {
   ['Calcium, Ca']: 'Calcium',
@@ -150,6 +158,9 @@ exports.getNutritionData = function (coolerData) {
       } else {
         logger.info('Connected To Nutrition DB');
         queryNutritionDatabase({ upcs, retailer, connection });
+        actionCounter.inc({
+          action_type: 'nutrition_data_request'
+        }); 
       }
     });
     

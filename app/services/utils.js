@@ -5,6 +5,12 @@ const config = require('./coolerCacheConfig');
 const logger = require('./logger');
 //const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
+const { metrics } = require('../helpers/helpers');
+const actionCounter = metrics().counter({
+  name: 'action__counter_lm',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
 
 /*exports.getScreenNameForDevice = async function () {
     // We used to expect this to be located on a filename, however we now use a REST call instead.
@@ -44,6 +50,9 @@ exports.writeNeidFile = function(neid) {
 
 // Throws if neid file does not exist:
 exports.readNeidFileIfExists = function() {
+    actionCounter.inc({
+        action_type: 'nutrition_data_request_retries'
+    }); 
     return fs.readFileSync(path.join(config.coolerCacheRootFolder, 'neid'), 'utf8');
 }
 
