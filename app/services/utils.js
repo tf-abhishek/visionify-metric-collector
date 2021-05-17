@@ -1,8 +1,10 @@
+const { isEmpty } = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const config = require('./coolerCacheConfig');
 const logger = require('./logger');
+const sendMessageToModule = require('./iotClient')
 //const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
 
@@ -37,21 +39,41 @@ exports.readTextFile = function(fileFullPath) {
     return fs.readFileSync(fileFullPath, 'utf8');
 }
 
-exports.writeNeidFile = function(neid) {
+exports.writeNeidFile = function (neid) {
     createDirSync(config.coolerCacheRootFolder);
     fs.writeFileSync(path.join(config.coolerCacheRootFolder, 'neid'), neid, { encoding: 'utf8' });
 }
 
 // Throws if neid file does not exist:
-exports.readNeidFileIfExists = function() {
+exports.readNeidFileIfExists = function () {
     return fs.readFileSync(path.join(config.coolerCacheRootFolder, 'neid'), 'utf8');
 }
 
-exports.createDirectoriesForAssetsSync = function(...directories) {
+exports.createDirectoriesForAssetsSync = function (...directories) {
+    // console.log('+++++++++++++++++++++++++++++++++++++++++++-------------------------------++++++++++++++++++++++++')
     directories.forEach(directory => createDirSync(directory));
+    // let createDirectoryPromises = []
+    // for (let item of directories) {
+    //     createDirectoryPromises.push(new Promise(resolve => {
+    //         createDirSync(directory)
+    //         resolve()
+    //     }))
+    // }
+
+    // console.log('+++++++++++++++++++++++++++++++++++++++++++')
+
+    // return Promise.all(createDirectoryPromises).then(data => {
+    //     ///////////////////////////////////////////////////////////////////////////////////
+    //     //send intermoduleCommunication....................................................
+    //     console.log('syncing directory complete..............................')
+    //     sendMessageToModule('downloadStatus', {
+    //         downloadStatus: true
+    //     })
+    //     return data
+    // })
 }
 
-exports.getFilesizeInBytes = function(filePathAndName) {
+exports.getFilesizeInBytes = function (filePathAndName) {
     var stats = fs.statSync(filePathAndName);
     var fileSizeInBytes = stats["size"];
 
@@ -70,7 +92,7 @@ exports.isNonEmptyArray = function (arr) {
     return Array.isArray(arr) && arr.length && arr.length > 0;
 }
 
-exports.toDistinctDictionary = function(arr, keyFunc, valueFunc) {
+exports.toDistinctDictionary = function (arr, keyFunc, valueFunc) {
     let results = {};
     const distinctArr = [...new Set(arr,)];
 
@@ -95,7 +117,7 @@ exports.toDistinctDictionary = function(arr, keyFunc, valueFunc) {
     return results;
 }
 
-exports.toDictionary = function(arr, keyFunc, valueFunc) {
+exports.toDictionary = function (arr, keyFunc, valueFunc) {
     let results = {};
 
     arr.forEach(element => {
@@ -110,9 +132,23 @@ exports.toDictionary = function(arr, keyFunc, valueFunc) {
 }
 
 // Very simple, specific implementation to OUR case:
-exports.toUnconfidentialUrl = function(url) {
+exports.toUnconfidentialUrl = function (url) {
     return url.split('?')[0];
 }
+
+/**
+ * @description extract adaptablepricetag flag 
+ * @param {object} coolerData
+ * @returns {object} tagsEnabled
+*/
+exports.getAdaptableTagsEnabled = function (coolerData) {
+    let tagsEnabled = false;
+
+    if (!isEmpty(coolerData) && coolerData.adaptablepricetag) {
+        tagsEnabled = coolerData.adaptablepricetag === 'Y';
+    }
+    return tagsEnabled;
+};
 
 function createDirSync(dirPath) {
     try {
@@ -121,3 +157,5 @@ function createDirSync(dirPath) {
         logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
     }
 }
+
+
