@@ -167,12 +167,13 @@ exports.getAdPlatformData = async function (forceDownload = false) {
   
   try {
     const adPlatformDataLastModified = utils.getFileLastModifiedTime(
-      path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
+      path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename)
+    );
     const getHeaders = forceDownload ? {} : getAdPlatformRequestHeaders(adPlatformDataLastModified);
     adPlatformUrl = await buildAdPlatformGetUrl();
     actionCounter.inc({
       action_type: 'ad_platform_campaign'
-  });
+    });
     const adPlatformDataResponse = await axios.get(adPlatformUrl, {
       headers: getHeaders,
     });
