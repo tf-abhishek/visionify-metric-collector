@@ -37,15 +37,15 @@ const _tagDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _tagAs
 const _labelDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _labelAssetTypeKDirectory);
 const _spotlightAdDirectoryPath = path.join(config.storageLocalAdPlatformDataDir, _spotlightAdAssetTypeDirectory);
 const _assetTypeToLocalDirectory = {
-  [_fullDoorAdAssetTypeKey]: _fullDoorAdDirectoryPath,
-  [_middleBannerAssetTypeKey]: _middleBannerDirectoryPath,
-  [_topBannerAssetTypeKey]: _topBannerDirectoryPath,
-  [_nativeAdAssetTypeKey]: _nativeAdDirectoryPath,
-  [_nativeFilterAssetTypeKey]: _nativeFilterDirectoryPath,
-  [_tagAssetTypeKey]: _tagDirectoryPath,
-  [_labelAssetTypeKey]: _labelDirectoryPath,
-  [_spotlightAdAssetTypeKey]: _spotlightAdDirectoryPath,
-};
+    [_fullDoorAdAssetTypeKey]: _fullDoorAdDirectoryPath,
+    [_middleBannerAssetTypeKey]: _middleBannerDirectoryPath,
+    [_topBannerAssetTypeKey]: _topBannerDirectoryPath,
+    [_nativeAdAssetTypeKey]: _nativeAdDirectoryPath,
+    [_nativeFilterAssetTypeKey]: _nativeFilterDirectoryPath,
+    [_tagAssetTypeKey]: _tagDirectoryPath,
+    [_labelAssetTypeKey]: _labelDirectoryPath,
+    [_spotlightAdAssetTypeKey]: _spotlightAdDirectoryPath
+}
 const _adPlatformNothingChanged = 'Not modified';
 
 let _firstAdPlatformServiceRun = true;
@@ -107,6 +107,27 @@ const saveAdAssets = async (campaign, forceDownload) => {
       if (forceDownload || shouldRedownloadFile) {
         if (!forceDownload) {
           logger.info(`Found an ad-platform asset that was not downloaded in previous cycle: ${assetFilename}, will download again`);
+    for (const campaign of adPlatformData) {
+        if (!campaign) {
+            logger.warn(`An empty campaign encountered`);
+            return;
+        }
+        if (!campaign.AdType) {
+            logger.error(`Cannot interpret adType for campaign ${JSON.stringify(campaign)}`);
+            return;
+        }
+        if (campaign.AdProvider !== 'CSI') {
+            logger.info(`Non CSI campaign. No assets to download, hence skipping. CampaignID: ${campaign.CampaignId}, AdType: ${campaign.AdType}`);
+            continue;
+        }
+        if (!campaign.Assets) {
+            logger.warn(`Campaign has no assets: ${JSON.stringify(campaign)}`);
+        }
+
+        const dirToSaveTo = _assetTypeToLocalDirectory[campaign.AdType]
+        if (!dirToSaveTo) {
+            logger.error(`Error: Unfamiliar AdType encountered: ${campaign.AdType}. Skipping.`);
+            return;
         }
         
         const shouldUseIfModifiedSince = !shouldRedownloadFile;
@@ -167,16 +188,17 @@ exports.getAdPlatformData = async function (forceDownload = false) {
     
     return adPlatformData;
   } catch (error) {
-    if (error && error.response) { // HTTP error
-      if (error.response.status === 304) {
-        // Not an error:
-        logger.info(`File at ${utils.toUnconfidentialUrl(adPlatformUrl)} was not modified compared to local copy, will not download.`);
-        
-        return _adPlatformNothingChanged;
-      }
-    } else {
-      const stack = error.stack ? error.stack.split("\n") : '';
-      logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`);
+        if (error && error.response) { // HTTP error
+            if (error.response.status === 304) {
+                // Not an error:
+                logger.info(`File at ${utils.toUnconfidentialUrl(adPlatformUrl)} was not modified compared to local copy, will not download.`);
+
+                return _adPlatformNothingChanged;
+            }
+        } else {
+            const stack = error.stack ? error.stack.split("\n") : '';
+            logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`, true);
+        }
     }
   }
 };
@@ -235,4 +257,9 @@ const buildAdPlatformGetUrl = async function () {
 function createDirectoriesForAssets() {
   utils.createDirectoriesForAssetsSync(_fullDoorAdDirectoryPath, _middleBannerDirectoryPath,
     _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath, _labelDirectoryPath, _spotlightAdDirectoryPath);
+}
+
+function createDirectoriesForAssets() {
+    utils.createDirectoriesForAssetsSync(_fullDoorAdDirectoryPath, _middleBannerDirectoryPath,
+        _topBannerDirectoryPath, _nativeAdDirectoryPath, _tagDirectoryPath, _labelDirectoryPath, _spotlightAdDirectoryPath);
 }

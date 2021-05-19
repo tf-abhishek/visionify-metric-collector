@@ -1,5 +1,7 @@
-const api = require('./api');
+const device = require('./deviceInfoHelper')
+const api = require('./api')
 
 module.exports = {
-    api,
+  device,
+  api,
 }

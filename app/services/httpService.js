@@ -94,14 +94,14 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
                 //logger.info(`File at ${downloadUrl} was not modified since last time, skipping.`);
             }
             else if (error.response.status === 404) {
-                logger.error(`File not found (404): ${downloadUrl}`);
+                logger.error(`File not found (404): ${downloadUrl}`, true);
             }
             else if (error.response.status === 403) {
-                logger.error(`Authentication failed (403) for ${downloadUrl}: [${error.response.statusText}]`);
+                logger.error(`Authentication failed (403) for ${downloadUrl}: [${error.response.statusText}]`, true);
             }
             else {
                 logger.error(`HTTP ${error.response.status} error when trying to 
-                get ${downloadUrl}: [${error.response.statusText}]`);
+                get ${downloadUrl}: [${error.response.statusText}]`, true);
                 throw error;
             }
         }
@@ -114,7 +114,7 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
                 throw error;
                 // TODO: Handle broken download
             }
-            logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`);
+            logger.error(`Error getting and saving file from URL ${downloadUrl}: ${error}`, true);
             fs.unlink(assetFullPath, err => {
                 if (err) {
                     logger.warn(`Could not unlink erratic file from download-url [${downloadUrl}]. Details: [${err}]`);
@@ -135,6 +135,7 @@ exports.getNEID = async function(updateNEID = false) {
             
             utils.writeNeidFile(_neid);
         } catch (error) {
+            logger.error(error, true)
             _neid = utils.readNeidFileIfExists();
         }
         // For subsequent dockers initializations, write to file as a fallback for API calls issues

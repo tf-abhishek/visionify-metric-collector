@@ -5,8 +5,10 @@ const coolerDataService = require('./services/coolerDataService');
 const httpService = require('./services/httpService');
 const merchAppSocket = require('./services/merchAppSocket');
 const nutritionDataService = require('./services/nutritionDataService');
+const skinBuilderService = require('./services/skinBuilderService');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
+const skinUpdateInterval = config.intervalForSkinDownload;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
 const socketInitRetryThreshold = 100;        // If we failed for 100 times, do not retry anymore
 const Transport = require('azure-iot-device-mqtt').Mqtt;
@@ -16,13 +18,11 @@ const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
 var prevCoolerData = '';
 
-const { api } = require('./helpers')
-const { app } = api;
-app.listen(8080);
-
-
-
+const _config = require('./config.json')
+const { device, api } = require('./helpers')
+const { app } = api
 const { metrics } = require('./helpers/helpers');
+
 const actionCounter = metrics().counter({
     name: 'action__counter_ad_platform',
     help: 'counter metric',
@@ -37,47 +37,42 @@ Array.prototype.extend = function (other_array) {
   }, this);
 };
 
-initializeListenerToMerchApp();
-// IOT HUB MESSANGE BROKER
-Client.fromEnvironment(Transport, function (err, client) {
-    if (err) {
-        throw err;
-    } else {
-        client.on('error', function (err) {
-            throw err;
-        });
+async function init() {
+    await device.getDeviceDetails();
+    logger.info('Starting metrics endpoint in GET /metrics');
+    app.listen(_config.api.port);
+}
 
-        // connect to the Edge instance
-        client.open(function (err) {
+function initializeEdgeHubClient() {
+    // IOT HUB MESSANGE BROKER
+    return new Promise((resolve, reject) => {
+        Client.fromEnvironment(Transport, function (err, client) {
             if (err) {
-                throw err;
+                reject(err);
             } else {
-                console.log('IoT Hub module client initialized, going to get coolerData');
-                
-                getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                // Send trigger bridge some stuff:
-                handleAdPlatform(client);
+                client.on('error', function (err) {
+                    reject(err);
+                });
 
-                client.on('inputMessage', function (inputName, msg) {
-                    console.log(`Entered inputMessage`);
-                    logger.info(`Entered inputMessage`);
-                    
-                    if (inputName == "refreshCoolerData"){
-                        console.log(`Entered refreshCoolerData`);
-                        getCoolerData(true).then((data) => console.log('Got cooler data, saved it and all!'));
-                        console.log('Direct Method is called to update CoolerData.json file');
-                    }
+                // connect to the Edge instance
+                client.open(function (err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        console.log('IoT Hub module client initialized, going to get coolerData');
 
-                    if (inputName == "refreshNEID"){
-                        console.log(`Entered refreshNEID`);
-                        const _neid = httpService.getNEID(true);
-                        console.log(`Direct Method is called to update NEID: ${_neid}`);
+                        getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
+                        // Send trigger bridge some stuff:                
+                        handleAdPlatform(client);
+
+                        handleSkinBuilder();
+                        resolve();
                     }
                 });
             }
         });
-    }
-});
+    });
+}
 
 function initializeListenerToMerchApp() {
     try {
@@ -93,7 +88,7 @@ function initializeListenerToMerchApp() {
         } else {
             // TODO: A metric to fire; this is of very high importance.
             logger.error(`Fatal error; Could not initiate socket listener on port ${merchAppSocket.listeningPort}
-            for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`)
+            for ${socketInitRetryThreshold} times. Will not be able to update merchApp with coolerData changes.`, true)
         }
     }
 }
@@ -151,6 +146,25 @@ function printResultFor(op) {
 
 // IOT HUB MESSANGE BROKER
 
+
+async function handleSkinBuilder() {
+    try {
+        const newSkin = await skinBuilderService.downloadSkinIfUpdated();
+    
+        if (newSkin) {
+            merchAppSocket.sendMerchAppSkinUpdate();
+        } else {
+            logger.info('No new skin to update');
+        }
+    } catch (error) {
+        logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`, true);
+    }
+    
+    setTimeout(async () => {
+        await handleSkinBuilder();
+    }, skinUpdateInterval);
+}
+
 const sendCoolerDataToMerchApp = function(coolerData) {
     if (JSON.stringify(coolerData) != JSON.stringify(prevCoolerData)) {
         console.log(`Will send updated cooler data to merchapp`);//: \n${JSON.stringify(coolerData)}\n\n`);
@@ -197,7 +211,7 @@ const getCoolerData = async function (isOnDemandCall = false) {
 
     } catch (error) {
         const stack = error.stack ? error.stack.split("\n") : '';
-        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`)
+        logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`, true)
     }
 
     if(!isOnDemandCall)
@@ -208,14 +222,18 @@ const getCoolerData = async function (isOnDemandCall = false) {
     }
 }
 
-
-//sendDataToTriggerBridge({sendOutpu--tEvent: function(...abc) {console.log(abc)}});
 //getCoolerData().then((data) => console.log('Finished!'));
 //adPlatformService.getAdPlatformData().then((data)=> adPlatformService.downloadAndSaveAdPlatformAssets(data).then((d) => console.log('That took awhile...')));
-//getAdPlatformData().then((data) => { console.log('final result: ' + data) });*/
+//handleSkinBuilder().then((a) => console.log('Finished skin stuff'));
 
 process.on('uncaughtException', err => {
     // TODO: Send telemetry of that exception
     console.error(err);
     process.exit(1);
-  });
+});
+
+(async () => {
+    initializeListenerToMerchApp();
+    await initializeEdgeHubClient();
+    await init();
+})();

@@ -12,6 +12,7 @@ const actionCounter = metrics().counter({
 });
 const listeningPort = process.env.merchappsocketport || config.merchAppListenPort;
 const coolerDataUpdatedKey = 'coolerDataUpdated';
+const skinUpdatedKey = 'coolerStyleUpdated';
 const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);
 const nutritionDataFileFullPath = path.join(config.coolerCacheRootFolder, `nutritionData.json`);
 let _server;
@@ -85,13 +86,23 @@ exports.sendMerchAppNutritionData = function (nutritionData) {
   }
 };
 
-exports.sendMerchAppCoolerDataUpdate = function (coolerData) {
-  if (_socket) { //&& _coolerDataAsked)
-    logger.info(`Sending merchApp a coolerData update`);
-    _server.emit(coolerDataUpdatedKey, coolerData);
-  } else {
-    _coolerData = coolerData;
-    logger.warn('Socket was not yet established when trying to send merchApp a coolerData update.'
-      + ' Will send a coolerData update when connection is established from merchApp.');
-  }
-};
+exports.sendMerchAppCoolerDataUpdate = function(coolerData) {
+    if (_socket) { //&& _coolerDataAsked)
+        logger.info(`Sending merchApp a coolerData update`);
+        _server.emit(coolerDataUpdatedKey, coolerData);
+    } else {
+        _coolerData = coolerData;
+        logger.warn('Socket was not yet established when trying to send merchApp a coolerData update.'
+            + ' Will send a coolerData update when connection is established from merchApp.');
+    }
+}
+
+exports.sendMerchAppSkinUpdate = function() {
+    if (_socket) {
+        logger.info(`Sending merchApp an update regarding new skin`);
+        _server.emit(skinUpdatedKey, 'true');
+    } else {
+        // Do nothing; Assuming merchApp will look at the skin file upon boot.
+        logger.warn('Socket was not yet established when trying to send merchApp a skin update.');
+    }
+}

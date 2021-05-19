@@ -22,6 +22,9 @@
     "prom-client": "^13.1.0",
     "socket.io": "^2.3.0",
     "tedious": "^9.2.1",
+    "dotenv": "^8.2.0",
+    "os": "^0.1.1",
+    "unzipper": "^0.10.11",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.4.0"
   }

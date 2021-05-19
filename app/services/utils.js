@@ -24,11 +24,20 @@ const actionCounter = metrics().counter({
     return _screenName;
 }*/
 
+exports.trimUrlEnd = function(url) {
+    if (url.endsWith('/')) {
+        return url.slice(0, -1);
+    }
+    
+    return url;
+}
+
 exports.getFileLastModifiedTime = function (fileFullPath) {
     let stats = undefined;
     try {
         stats = fs.statSync(fileFullPath);
     } catch (error) {
+        logger.error(error, true);
         return Date.MIN_VALUE;
     }
 
@@ -127,6 +136,6 @@ function createDirSync(dirPath) {
     try {
         fs.mkdirSync(dirPath, { recursive: true });
     } catch (error) {
-        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
+        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`, true)
     }
 }
