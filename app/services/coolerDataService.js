@@ -25,9 +25,7 @@ const retailerToProductsUrlMap = {
     'GGO': 'https://coolerassets.blob.core.windows.net/planogram-images-gg/',
     'KRO': 'https://coolerassets.blob.core.windows.net/planogram-images-kro/',
     'WMT': 'https://coolerassets.blob.core.windows.net/planogram-images-wmt/',
-    'CSD': 'https://coolerassets.blob.core.windows.net/planogram-images-csd/',
-    'CVS': 'https://coolerassets.blob.core.windows.net/planogram-images-cvs/',
-    'MUR': 'https://coolerassets.blob.core.windows.net/planogram-images-mur/'
+    'CSD': 'https://coolerassets.blob.core.windows.net/planogram-images-csd/'
 };
 const retailerToCoolerDataUrlMap = {
     'WBA': _coolerPath,
@@ -35,8 +33,6 @@ const retailerToCoolerDataUrlMap = {
     'KRO': _coolerPath,
     'WMT': _coolerPath,
     'CSD': _coolerPath,
-    'CVS': _coolerPath,
-    'MUR': _coolerPath,
     'LCL': 'https://planogram-editor-pilot-api-qa.azurewebsites.net/screens/'
 }
 const retailerToCoolerDataUrlSuffixMap = {
@@ -45,8 +41,6 @@ const retailerToCoolerDataUrlSuffixMap = {
     'KRO': '',
     'WMT': '',
     'CSD': '',
-    'CVS': '',
-    'MUR': '',
     'LCL': '/planomap'
 }
 var _assetCategoryToDirectoryDictionary = undefined;
