@@ -15,7 +15,7 @@ const actionCounter = metrics().counter({
 });
 
 let logLevel = process.env.LOG_LEVEL || 'info';
-//const logFilePath = path.join('/home/csiadmin/psensorApp/', 'logs');
+const logFilePath = path.join('/home/csiadmin/psensorApp/', 'logs');
 
 // set logging format
 const myFormat = printf(info => {
@@ -23,15 +23,15 @@ const myFormat = printf(info => {
 });
 
 // set transports
-//const rotateFileTransport = new (transports.DailyRotateFile)({
-//    filename: `${logFilePath}/psensor-%DATE%.log`,
-//    datePattern: 'YYYY-MM-DD',
-//    zippedArchive: true,
-//    maxSize: '5m',
-//    maxFiles: '14d',
-//    timestamp: true,
-//    level: logLevel === 'silly' ? 'silly' : 'debug'
-//});
+const rotateFileTransport = new (transports.DailyRotateFile)({
+    filename: `${logFilePath}/psensor-%DATE%.log`,
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '5m',
+    maxFiles: '14d',
+    timestamp: true,
+    level: logLevel === 'silly' ? 'silly' : 'debug'
+});
 const consoleTransport = new (transports.Console)({
     'timestamp': true,
     level: logLevel === 'silly' || logLevel === 'debug' ? logLevel : 'info'
@@ -43,26 +43,26 @@ let loggerClient = createLogger({
         myFormat
     ),
     transports: [
-        //rotateFileTransport,
+        rotateFileTransport,
         consoleTransport
     ],
     exitOnError: false
 });
 
-//loggerClient.stream = {
-//    write: function (message, encoding) {
-//        loggerClient.info(message);
-//    },
-//};
+loggerClient.stream = {
+    write: function (message, encoding) {
+        loggerClient.info(message);
+    },
+};
 
 // catch exceptions in dedicated file
-//loggerClient.exceptions.handle(
-//    new transports.File({
-//        filename: `${logFilePath}/psensor-unhandledExceptions.log`, format: combine(
-//            myFormat
-//        )
-//    })
-//);
+loggerClient.exceptions.handle(
+    new transports.File({
+        filename: `${logFilePath}/psensor-unhandledExceptions.log`, format: combine(
+            myFormat
+        )
+    })
+);
 
 const logger = {
     error: (text, isException = false) => {

@@ -10,8 +10,7 @@ const getNEID = async () => {
     return new Promise((resolve, reject) => {
       var content
       fs.readFile(
-        //path.normalize('/home/csiadmin/coolerCache/neid'),
-        path.normalize('/Users/josecalderon/neid'),
+        path.normalize('/home/csiadmin/coolerCache/neid'),
         function read(err, data) {
           if (err) {
             logger.info(err)
