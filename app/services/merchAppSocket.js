@@ -1,10 +1,18 @@
 const io = require("socket.io");
 const path = require('path');
 const config = require('./coolerCacheConfig');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const utils = require('./utils');
+const { metrics } = require('../helpers/helpers');
+
+const actionCounter = metrics().counter({
+  name: 'action__counter_nutrition_data',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
 const listeningPort = process.env.merchappsocketport || config.merchAppListenPort;
 const coolerDataUpdatedKey = 'coolerDataUpdated';
+const skinUpdatedKey = 'coolerStyleUpdated';
 const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, `coolerData.json`);
 const nutritionDataFileFullPath = path.join(config.coolerCacheRootFolder, `nutritionData.json`);
 let _server;
@@ -36,6 +44,9 @@ exports.initialize = function () {
       logger.info(`Received a 'nutritionData' from merchApp. Will send last nutritionData'`);
       const nutritionDataToSend = _nutritionData || utils.readTextFile(nutritionDataFileFullPath);
       _server.emit(nutritionDataKey, nutritionDataToSend);
+      actionCounter.inc({
+        action_type: 'nutrition_record_returned'
+      }); 
     });
     
     /*if (_coolerData) {
@@ -75,17 +86,23 @@ exports.sendMerchAppNutritionData = function (nutritionData) {
   }
 };
 
-exports.sendMerchAppCoolerDataUpdate = function (coolerData) {
-  try {
+exports.sendMerchAppCoolerDataUpdate = function(coolerData) {
     if (_socket) { //&& _coolerDataAsked)
-      logger.info(`Sending merchApp a coolerData update`);
-      _server.volatile.emit(coolerDataUpdatedKey, coolerData);
+        logger.info(`Sending merchApp a coolerData update`);
+        _server.emit(coolerDataUpdatedKey, coolerData);
     } else {
-      _coolerData = coolerData;
-      logger.warn('Socket was not yet established when trying to send merchApp a coolerData update.'
-        + ' Will send a coolerData update when connection is established from merchApp.');
+        _coolerData = coolerData;
+        logger.warn('Socket was not yet established when trying to send merchApp a coolerData update.'
+            + ' Will send a coolerData update when connection is established from merchApp.');
     }
-  } catch (error) {
-    logger.warn('error in sendMerchAppCoolerDataUpdate ::', error);
-  }
-};
+}
+
+exports.sendMerchAppSkinUpdate = function() {
+    if (_socket) {
+        logger.info(`Sending merchApp an update regarding new skin`);
+        _server.emit(skinUpdatedKey, 'true');
+    } else {
+        // Do nothing; Assuming merchApp will look at the skin file upon boot.
+        logger.warn('Socket was not yet established when trying to send merchApp a skin update.');
+    }
+}

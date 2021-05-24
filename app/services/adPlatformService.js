@@ -3,10 +3,16 @@ const utils = require('./utils');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
 const fileRecoveryUtils = require('./fileRecoveryUtils');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios').default;
+const { metrics } = require('../helpers/helpers');
+const actionCounter = metrics().counter({
+  name: 'action__counter_Campaign',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
 
 const _storageLocalAdPlatformDataDir = _adPlatformConfig.coolerCacheRootFolder;
 const _adPlatformDataFilename = 'adPlatformData.json';
@@ -140,10 +146,13 @@ exports.getAdPlatformData = async function (forceDownload = false) {
   
   try {
     const adPlatformDataLastModified = utils.getFileLastModifiedTime(
-      path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename));
+      path.join(_storageLocalAdPlatformDataDir, _adPlatformDataFilename)
+      );
     const getHeaders = forceDownload ? {} : getAdPlatformRequestHeaders(adPlatformDataLastModified);
     adPlatformUrl = await buildAdPlatformGetUrl();
-    
+    actionCounter.inc({
+      action_type: 'ad_platform_campaign'
+    });
     const adPlatformDataResponse = await axios.get(adPlatformUrl, {
       headers: getHeaders,
     });
@@ -168,7 +177,7 @@ exports.getAdPlatformData = async function (forceDownload = false) {
       }
     } else {
       const stack = error.stack ? error.stack.split("\n") : '';
-      logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`);
+      logger.error(`Error getting AdPlatform data from ${adPlatformUrl}: ${error}. [${stack}]`, true);
     }
   }
 };
