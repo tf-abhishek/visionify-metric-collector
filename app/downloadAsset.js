@@ -1,5 +1,4 @@
 const fs = require('fs');
-//const logger = require('./services/logger');
 const logger = require('./helpers/logHelper');
 const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
@@ -15,7 +14,7 @@ const socketInitRetryThreshold = 100;        // If we failed for 100 times, do n
 const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
-//const adPlatformService = require('./services/adPlatformService');
+const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
 var prevCoolerData = '';
 
@@ -234,7 +233,7 @@ process.on('uncaughtException', err => {
 });
 
 (async () => {
-    //initializeListenerToMerchApp();
-    //await initializeEdgeHubClient();
+    initializeListenerToMerchApp();
+    await initializeEdgeHubClient();
     await init();
 })();
