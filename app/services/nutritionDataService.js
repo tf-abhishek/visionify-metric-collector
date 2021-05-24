@@ -2,7 +2,7 @@ const { Connection, Request } = require("tedious");
 const path = require('path');
 const fs = require('fs');
 const utils = require('./utils');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const config = require('./coolerCacheConfig');
 const merchAppSocket = require('./merchAppSocket');
 

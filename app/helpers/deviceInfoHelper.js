@@ -3,7 +3,7 @@
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
-const logger = require('../services/logger')
+const logger = require('../helpers/logHelper')
 
 const getNEID = async () => {
     // First I want to read the file

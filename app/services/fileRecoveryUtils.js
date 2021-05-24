@@ -1,5 +1,5 @@
 const utils = require('./utils');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const path = require('path');
 const fs = require('fs');
 

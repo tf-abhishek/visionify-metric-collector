@@ -15,23 +15,22 @@ const actionCounter = metrics().counter({
 });
 
 let logLevel = process.env.LOG_LEVEL || 'info';
-const logFilePath = path.join('/home/csiadmin/psensorApp/', 'logs');
+
+const logFilePath = process.env.logfilepath || './logs';
+const rotateFileTransport = new (transports.DailyRotateFile)({
+    filename: `${logFilePath}/CoolerCache-%DATE%.log`,
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    timestamp: true,
+});
 
 // set logging format
 const myFormat = printf(info => {
     return `${getLocalDateTime()} ${timeZoneAbbr()} - [${info.level}] : ${info.message}`;
 });
 
-// set transports
-const rotateFileTransport = new (transports.DailyRotateFile)({
-    filename: `${logFilePath}/psensor-%DATE%.log`,
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '5m',
-    maxFiles: '14d',
-    timestamp: true,
-    level: logLevel === 'silly' ? 'silly' : 'debug'
-});
 const consoleTransport = new (transports.Console)({
     'timestamp': true,
     level: logLevel === 'silly' || logLevel === 'debug' ? logLevel : 'info'

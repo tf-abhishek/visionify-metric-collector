@@ -1,5 +1,5 @@
 const fs = require('fs');
-const logger = require('./services/logger');
+const logger = require('./helpers/logHelper');
 const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
 const httpService = require('./services/httpService');
