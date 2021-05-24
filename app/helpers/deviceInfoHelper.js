@@ -3,14 +3,15 @@
 const fs = require('fs')
 const path = require('path')
 const os = require('os')
-const logger = require('../services/logger')
+const logger = require('../helpers/logHelper')
 
 const getNEID = async () => {
     // First I want to read the file
     return new Promise((resolve, reject) => {
       var content
       fs.readFile(
-        path.normalize('/home/csiadmin/coolerCache/neid'),
+        //path.normalize('/home/csiadmin/coolerCache/neid'),
+        path.normalize('/Users/josecalderon/neid'),
         function read(err, data) {
           if (err) {
             logger.info(err)

@@ -4,7 +4,7 @@ const fs = require('fs');
 const fsAsync = fs.promises;
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const utils = require('./utils');
 
 const _storageLocalSkinDir = path.join(config.coolerCacheAssetsFolder, 'skinBuilder');

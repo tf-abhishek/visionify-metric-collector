@@ -1,7 +1,7 @@
 const io = require("socket.io");
 const path = require('path');
 const config = require('./coolerCacheConfig');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const utils = require('./utils');
 const { metrics } = require('../helpers/helpers');
 
