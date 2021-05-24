@@ -65,7 +65,7 @@ exports.initialize = function () {
     }*/
     socket.on("disconnect", () => {
       _coolerDataAsked = false;
-      _socket = undefined;
+      // _socket = undefined;
       logger.info(`Client gone [id=${socket.id}]`);
     });
   });

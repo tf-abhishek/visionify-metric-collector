@@ -4,6 +4,7 @@ const config = require('./services/coolerCacheConfig');
 const coolerDataService = require('./services/coolerDataService');
 const httpService = require('./services/httpService');
 const merchAppSocket = require('./services/merchAppSocket');
+const { setClient, sendMessageToModule } = require('./services/iotClient')
 const nutritionDataService = require('./services/nutritionDataService');
 const skinBuilderService = require('./services/skinBuilderService');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
@@ -50,23 +51,51 @@ function initializeEdgeHubClient() {
             if (err) {
                 reject(err);
             } else {
-                client.on('error', function (err) {
-                    reject(err);
+                setClient(client)
+                console.log('IoT Hub module client initialized, going to get coolerData');
+
+                getCoolerData().then((data) => {
+                    console.log('Got cooler data, saved it and all!')
+                    console.log('sending downloadStatus message now.....................')
+                    sendMessageToModule('downloadStatus', {
+                        downloadStatus: true
+                    })
                 });
+                // Send trigger bridge some stuff:                
+                handleAdPlatform(client);
 
-                // connect to the Edge instance
-                client.open(function (err) {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        console.log('IoT Hub module client initialized, going to get coolerData');
+                client.on('inputMessage', function (inputName, msg) {
+                    console.log(`Entered inputMessage`);
+                    logger.info(`Entered inputMessage`);
 
-                        getCoolerData().then((data) => console.log('Got cooler data, saved it and all!'));
-                        // Send trigger bridge some stuff:                
-                        handleAdPlatform(client);
+                    if (inputName == "refreshCoolerData") {
+                        console.log(`Entered refreshCoolerData`);
+                        getCoolerData(true).then((data) => {
+                            console.log('Got cooler data, saved it and all!')
+                            console.log('sending downloadStatus message now.....................')
+                            sendMessageToModule('downloadStatus', {
+                                downloadStatus: true
+                            })
+                        });
+                        console.log('Direct Method is called to update CoolerData.json file');
+                    }
 
-                        handleSkinBuilder();
-                        resolve();
+                    if (inputName == "refreshNEID") {
+                        console.log(`Entered refreshNEID`);
+                        const _neid = httpService.getNEID(true);
+                        // set neid after update
+                        coolerDataService.setNeid(_neid);
+                        console.log(`Direct Method is called to update NEID: ${_neid}`);
+                        sendMessageToModule('downloadStatus', {
+                            downloadStatus: false
+                        })
+                        getCoolerData(true).then((data) => {
+                            console.log('Got cooler data, saved it and all!')
+                            console.log('sending downloadStatus message now.....................')
+                            sendMessageToModule('downloadStatus', {
+                                downloadStatus: true
+                            })
+                        });
                     }
                 });
             }
@@ -108,7 +137,7 @@ function handleAdPlatform(client) {
                             'playListData',
                             new Message(JSON.stringify(data)),
                             printResultFor('Sent TriggerBridge assets'));
-                            logger.info(`Sent AdPlatform JSON to TriggerBridge`);
+                        logger.info(`Sent AdPlatform JSON to TriggerBridge`);
                     });
             } else {
                 logger.info('Looks like adPlatformData did not change since last time. Will just verify assets are in-place and complete.');
@@ -116,7 +145,7 @@ function handleAdPlatform(client) {
 
                 adPlatformService.downloadAndSaveAdPlatformAssets(adPlatformData, false);
             }
-            
+
             // In any case, schedule another call to Ad-Platform:
             setTimeout(() => {
                 handleAdPlatform(client);
@@ -214,8 +243,7 @@ const getCoolerData = async function (isOnDemandCall = false) {
         logger.error(`Error in outter loop of getCoolerData: ${error}, [${stack}]. Will keep calling next interval.`, true)
     }
 
-    if(!isOnDemandCall)
-    {
+    if (!isOnDemandCall) {
         setTimeout(async () => {
             await getCoolerData();
         }, getCoolerDataIntervalInMs);
