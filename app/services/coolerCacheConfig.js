@@ -17,8 +17,9 @@ const coolerCacheRootFolderDebug = './app/yo';
 
 // Values to use:
 config.merchAppListenPort = 2346;
+config.universalPlangramImageStorageUrl = process.env.universalPlangramImageStorageUrl || 'https://univplanostoragesa.blob.core.windows.net/univplanoimagesprod/';
 config.planogramurl = process.env.planogramurl || `https://planogram-editor-api.azurewebsites.net/screens/`;
-config.NeidQueryAddress = 'https://location-manager-api.azurewebsites.net/api/assets/GetData?hostname=';
+config.NeidQueryAddress = process.env.NeidQueryAddress || 'https://coolerscreens.azure-api.net/location-manager/api/assets/GetData?hostname=';
 config.intervalForCoolerDataDownloadMs = process.env.coolercacheintervalms || 10 * 60 * 1000; // 10 minutes is default
 config.intervalForAdPlatformDownloadMs = process.env.adplatformintervalms || 30 * 60 * 1000; // 30 minutes is default
 config.intervalForSkinDownload = process.env.skinintervalms || 60 * 60 * 1000;              // Every hour is default
