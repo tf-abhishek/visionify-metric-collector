@@ -5,7 +5,7 @@ const axios = require('axios').default;
 const fs = require('fs');
 const config = require('./coolerCacheConfig');
 const httpService = require('./httpService');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const retry = require('async-retry');
 
 const _coolerPath = config.planogramurl;

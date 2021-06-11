@@ -22,6 +22,7 @@ config.planogramurl = process.env.planogramurl || `https://planogram-editor-api.
 config.NeidQueryAddress = process.env.NeidQueryAddress || 'https://coolerscreens.azure-api.net/location-manager/api/assets/GetData?hostname=';
 config.intervalForCoolerDataDownloadMs = process.env.coolercacheintervalms || 10 * 60 * 1000; // 10 minutes is default
 config.intervalForAdPlatformDownloadMs = process.env.adplatformintervalms || 30 * 60 * 1000; // 30 minutes is default
+config.intervalForSkinDownload = process.env.skinintervalms || 60 * 60 * 1000;              // Every hour is default
 config.defaultStore = process.env.defaultstore || 'WBA';
 config.adPlatformFunctionCode = process.env.adplatformkey || config.adPlatformFunctionCodeProd;
 config.adPlatformBaseUrl = `${trimUrlEnd(adPlatformHostname)}/api/external/screenData/`
@@ -36,6 +37,7 @@ config.nutritionDbName = process.env.nutritionDbName || 'productdata';
 config.nutritionDbServer = process.env.nutritionDbServer || 'csi-rvaetl-sql.database.windows.net';
 config.nutritionDbUsername = process.env.nutritionDbUsername || 'csi_readonly';
 config.nutritionDbPassword = process.env.nutritionDbPassword || 'C00l3rsD2t2#s';
+config.skinBuilderUrl = process.env.skinbuilderurl || 'https://coolerassets.blob.core.windows.net/skin-builder-prod/current/';
 
 function trimUrlEnd(url) {
     if (url.endsWith('/')) {

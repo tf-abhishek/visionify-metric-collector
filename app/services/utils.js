@@ -3,10 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const config = require('./coolerCacheConfig');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const sendMessageToModule = require('./iotClient')
 //const screenNameFilePath = config.screenNEIDPath;
 var _screenName = undefined;
+const { metrics } = require('../helpers/helpers');
+const actionCounter = metrics().counter({
+  name: 'action__counter_lm',
+  help: 'counter metric',
+  labelNames: ['action_type'],
+});
 
 /*exports.getScreenNameForDevice = async function () {
     // We used to expect this to be located on a filename, however we now use a REST call instead.
@@ -20,11 +26,20 @@ var _screenName = undefined;
     return _screenName;
 }*/
 
+exports.trimUrlEnd = function(url) {
+    if (url.endsWith('/')) {
+        return url.slice(0, -1);
+    }
+    
+    return url;
+}
+
 exports.getFileLastModifiedTime = function (fileFullPath) {
     let stats = undefined;
     try {
         stats = fs.statSync(fileFullPath);
     } catch (error) {
+        logger.error(error, true);
         return Date.MIN_VALUE;
     }
 
@@ -45,7 +60,10 @@ exports.writeNeidFile = function (neid) {
 }
 
 // Throws if neid file does not exist:
-exports.readNeidFileIfExists = function () {
+exports.readNeidFileIfExists = function() {
+    actionCounter.inc({
+        action_type: 'nutrition_data_request_retries'
+    }); 
     return fs.readFileSync(path.join(config.coolerCacheRootFolder, 'neid'), 'utf8');
 }
 
@@ -154,7 +172,7 @@ function createDirSync(dirPath) {
     try {
         fs.mkdirSync(dirPath, { recursive: true });
     } catch (error) {
-        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`)
+        logger.error(`Error creating dir for saving files under ${dirPath}: ${error}`, true)
     }
 }
 
