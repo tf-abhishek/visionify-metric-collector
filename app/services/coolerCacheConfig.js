@@ -29,6 +29,7 @@ config.adPlatformBaseUrl = `${trimUrlEnd(adPlatformHostname)}/api/external/scree
 config.coolerCacheRootFolder = coolerCacheRootFolderProd;
 config.coolerCacheAssetsFolder = config.coolerCacheRootFolder + '/resources';
 config.storageLocalAdPlatformDataDir = config.coolerCacheAssetsFolder;
+config.dsoFilePath = process.env.dsoFilePath || '/usr/local/bin/dso/config/config.json'
 
 // DB values for cookie project nutrition data
 // These are defaulted to prod values but can be rewritten by env variables set in the deployment

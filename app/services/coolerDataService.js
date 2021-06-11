@@ -68,8 +68,10 @@ exports.saveCoolerDataToDisk = function (coolerData) {
             JSON.stringify(coolerData),
             { flag: 'w+' });
         logger.info(`coolerData file was saved under ${config.coolerCacheRootFolder}`);
+        return true;
     } catch (error) {
         logger.error(`Error saving coolerData: ${error}`);
+        return false;
     }
 
     /*fs.writeFile(coolerDataFileFullPath,

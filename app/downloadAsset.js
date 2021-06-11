@@ -6,18 +6,22 @@ const httpService = require('./services/httpService');
 const merchAppSocket = require('./services/merchAppSocket');
 const { setClient, sendMessageToModule } = require('./services/iotClient')
 const nutritionDataService = require('./services/nutritionDataService');
+const dsoService = require('./services/dsoService');
 const skinBuilderService = require('./services/skinBuilderService');
 const getAdPlatformIntervalInMs = config.intervalForAdPlatformDownloadMs;
 const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
 const skinUpdateInterval = config.intervalForSkinDownload;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
 const socketInitRetryThreshold = 100;        // If we failed for 100 times, do not retry anymore
+const enableDso = process.env.enableDso || 'false'; // set in the deployment manifest. truthy value will write dso to file
 const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
 const adPlatformService = require('./services/adPlatformService');
 var socketFailuresCounter = 0;
 var prevCoolerData = '';
+
+logger.info(`should dso be set? --> ${enableDso}`)
 
 const _config = require('./config.json')
 const { device, api } = require('./helpers')
@@ -32,10 +36,10 @@ const actionCounter = metrics().counter({
 
 Date.MIN_VALUE = new Date(-8640000000000000);
 Array.prototype.extend = function (other_array) {
-  if (!utils.isArray(other_array)) return;
-  other_array.forEach(function (v) {
-    this.push(v);
-  }, this);
+    if (!utils.isArray(other_array)) return;
+    other_array.forEach(function (v) {
+        this.push(v);
+    }, this);
 };
 
 async function init() {
@@ -179,7 +183,7 @@ function printResultFor(op) {
 async function handleSkinBuilder() {
     try {
         const newSkin = await skinBuilderService.downloadSkinIfUpdated();
-    
+
         if (newSkin) {
             merchAppSocket.sendMerchAppSkinUpdate();
         } else {
@@ -188,13 +192,13 @@ async function handleSkinBuilder() {
     } catch (error) {
         logger.error(`An error occurred when trying to check for/get a Skin update: [${error}]`, true);
     }
-    
+
     setTimeout(async () => {
         await handleSkinBuilder();
     }, skinUpdateInterval);
 }
 
-const sendCoolerDataToMerchApp = function(coolerData) {
+const sendCoolerDataToMerchApp = function (coolerData) {
     if (JSON.stringify(coolerData) != JSON.stringify(prevCoolerData)) {
         console.log(`Will send updated cooler data to merchapp`);//: \n${JSON.stringify(coolerData)}\n\n`);
         merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
@@ -207,18 +211,19 @@ const sendCoolerDataToMerchApp = function(coolerData) {
 
 const getCoolerData = async function (isOnDemandCall = false) {
     try {
+        let isCoolerDataFileUpdated = false;
         let coolerData = await coolerDataService.getCoolerData();
 
         if (coolerDataService.wasCoolerDataUpdated(coolerData)) {
             logger.info(`coolerData was updated, will download assets and then send the file over to merchApp.`);
             await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData);
             logger.info('Downloaded all coolerData assets');
-            
+
             // Get nutrition data for each product
             nutritionDataService.getNutritionData(coolerData);
-          
+
             //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
-            coolerDataService.saveCoolerDataToDisk(coolerData);
+            isCoolerDataFileUpdated = coolerDataService.saveCoolerDataToDisk(coolerData);
             sendCoolerDataToMerchApp(coolerData);
         } else {
             if (!nutritionDataService.nutritionDataExists()) {
@@ -227,15 +232,20 @@ const getCoolerData = async function (isOnDemandCall = false) {
             } else {
                 logger.info('Nutrition data file present. No download needed');
             }
-            
+
             logger.info('Got coolerData, however it was not modified since last time, so will only ensure all files exist');
             const downloaded = await coolerDataService.downloadAndSaveAssetsIfNeeded(coolerData, false);
             // To trigger merchApp refresh:
             if (downloaded) {
                 //merchAppSocket.sendMerchAppCoolerDataUpdate(coolerData);
-                coolerDataService.saveCoolerDataToDisk(coolerData);
+                isCoolerDataFileUpdated = coolerDataService.saveCoolerDataToDisk(coolerData);
                 sendCoolerDataToMerchApp(coolerData);
             }
+        }
+
+        // handle dso if its enabled and coolerData.json updated
+        if (isCoolerDataFileUpdated && enableDso === 'true') {
+            dsoService.handleDso()
         }
 
     } catch (error) {
