@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const utils = require('./utils');
-const logger = require('./logger');
+const logger = require('../helpers/logHelper');
 const hash = require('object-hash');
 const { isEmpty } = require('lodash');
 const config = require('./coolerCacheConfig');
@@ -13,11 +13,14 @@ const coolerDataFileFullPath = path.join(config.coolerCacheRootFolder, 'coolerDa
 const getDsoScheduleFromCoolerData = () => {
     try {
         const coolerData = JSON.parse(utils.readTextFile(coolerDataFileFullPath))
-        if (!coolerData?.store?.time || isEmpty(coolerData?.store?.time)) {
+        const schedule = (coolerData.store && coolerData.store.time) ? coolerData.store.time : null
+        const isScheduleEmpty = schedule ? isEmpty(schedule) : null
+
+        if (!schedule || isScheduleEmpty) {
             logger.warn('dso schedule not found in coolerData.json')
             return false
         }
-        return coolerData?.store?.time
+        return schedule
     } catch (error) {
         logger.error(`error at [dsoService.getDsoScheduleFromCoolerData]: ${error}`)
     }
@@ -47,8 +50,8 @@ const readDsoConfigFile = () => {
             return [false]
         }
         const dsoConfig = JSON.parse(utils.readTextFile(dsoFilePath))
-        const currentDsoSchedule = dsoConfig?.time || {}
-        const scheduleUpdatedAt = dsoConfig?.schedule_updated_at || ''
+        const currentDsoSchedule = dsoConfig.time || {}
+        const scheduleUpdatedAt = dsoConfig.schedule_updated_at || ''
         return [dsoConfig, currentDsoSchedule, scheduleUpdatedAt]
     } catch (error) {
         logger.error(`error at [dsoService.readDsoConfigFile]: ${error}`)

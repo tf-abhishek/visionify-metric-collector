@@ -13,7 +13,7 @@ const getCoolerDataIntervalInMs = config.intervalForCoolerDataDownloadMs;
 const skinUpdateInterval = config.intervalForSkinDownload;
 const socketListenerInterval = 3 * 1000;    // base time: 3 seconds
 const socketInitRetryThreshold = 100;        // If we failed for 100 times, do not retry anymore
-const enableDso = process.env.enableDso || false; // set in the deployment manifest. truthy value will write dso to file
+const enableDso = process.env.enableDso || 'false'; // set in the deployment manifest. truthy value will write dso to file
 const Transport = require('azure-iot-device-mqtt').Mqtt;
 const Client = require('azure-iot-device').ModuleClient;
 const Message = require('azure-iot-device').Message;
@@ -244,7 +244,7 @@ const getCoolerData = async function (isOnDemandCall = false) {
         }
 
         // handle dso if its enabled and coolerData.json updated
-        if (isCoolerDataFileUpdated && enableDso) {
+        if (isCoolerDataFileUpdated && enableDso === 'true') {
             dsoService.handleDso()
         }
 
