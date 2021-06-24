@@ -130,7 +130,7 @@ function handleAdPlatform(client) {
     logger.info('Requesting Ad-Platform data');
 
     appInsightsMetrics().trackEvent({
-        name: "ad_platform_campaign_requests", 
+        name: 'ad_platform_campaign_requests', 
         properties: { }
      });
 
@@ -164,7 +164,7 @@ function handleAdPlatform(client) {
             logger.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
 
             appInsightsMetrics().trackEvent({
-                name: "ad_platform_campaign_requests_failed", 
+                name: 'ad_platform_campaign_requests_failed', 
                 properties: { }
              });
             

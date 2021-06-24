@@ -46,7 +46,7 @@ exports.initialize = function () {
       _server.emit(nutritionDataKey, nutritionDataToSend);
       
       appInsightsMetrics().trackEvent({
-        name: "nutrition_record_returned", 
+        name: 'nutrition_record_returned', 
         properties: { }
      });
 

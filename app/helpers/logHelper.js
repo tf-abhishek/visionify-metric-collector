@@ -68,7 +68,7 @@ const logger = {
         if (isException) {
 
             appInsightsMetrics().trackEvent({
-                name: "error_exception_logs", 
+                name: 'error_exception_logs', 
                 properties: { }
              });
 
@@ -78,7 +78,7 @@ const logger = {
         } else {
 
             appInsightsMetrics().trackEvent({
-                name: "error_logs", 
+                name: 'error_logs', 
                 properties: { }
              });
 
@@ -97,7 +97,7 @@ const logger = {
     warn: (text) => {
 
         appInsightsMetrics().trackEvent({
-            name: "warning_logs", 
+            name: 'warning_logs', 
             properties: { }
          });
 

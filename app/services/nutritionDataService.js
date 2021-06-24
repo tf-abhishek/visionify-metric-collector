@@ -160,7 +160,7 @@ exports.getNutritionData = function (coolerData) {
         queryNutritionDatabase({ upcs, retailer, connection });
         
         appInsightsMetrics().trackEvent({
-          name: "nutrition_data_reques", 
+          name: 'nutrition_data_reques', 
           properties: { }
        });
         

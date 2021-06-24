@@ -22,7 +22,7 @@ exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, direc
     await retry(async bail => {
 
         appInsightsMetrics().trackEvent({
-            name: "asset_requests", 
+            name: 'asset_requests', 
             properties: { }
          });
        
@@ -37,7 +37,7 @@ exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, direc
             logger.warn(`Will retry error [${err}]`)
 
             appInsightsMetrics().trackEvent({
-                name: "asset_requests_retry", 
+                name: 'asset_requests_retry', 
                 properties: { }
              });
 
@@ -100,7 +100,7 @@ const downloadAssetInternal = async function(downloadUrl, assetFilename, directo
     catch (error) {
         
         appInsightsMetrics().trackEvent({
-            name: "asset_requests_failed", 
+            name: 'asset_requests_failed', 
             properties: { }
          });
 
@@ -170,6 +170,11 @@ async function getNeidFromLocationApi(){
         let neidUrl = `${config.NeidQueryAddress}${os.hostname()}`;
         logger.info(`Getting NEID for device from: ${neidUrl}`);
         response = await axios.get(neidUrl);
+
+        appInsightsMetrics().trackEvent({
+            name: 'location_manager_requests', 
+            properties: { }
+         });
         actionCounter.inc({
             action_type: 'location_manager_requests'
         });
@@ -177,7 +182,7 @@ async function getNeidFromLocationApi(){
         logger.warn(`Error getting NEID for device ${os.hostname()}: [${error}]. Will try to read from file, if exists`);
         
         appInsightsMetrics().trackEvent({
-            name: "location_manager_requests_failed", 
+            name: 'location_manager_requests_failed', 
             properties: { }
          });
 
@@ -190,7 +195,7 @@ async function getNeidFromLocationApi(){
     if (!response.data || !response.data.data || !response.data.data.assets){
         
         appInsightsMetrics().trackEvent({
-            name: "location_manager_requests_fail_state", 
+            name: 'location_manager_requests_fail_state', 
             properties: { }
          });
 
@@ -204,7 +209,7 @@ async function getNeidFromLocationApi(){
     if (utils.isEmptyArray(response.data.data.assets)) {
         
         appInsightsMetrics().trackEvent({
-            name: "location_manager_requests_fail_state", 
+            name: 'location_manager_requests_fail_state', 
             properties: { }
          });
         

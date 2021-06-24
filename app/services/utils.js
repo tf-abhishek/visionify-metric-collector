@@ -63,7 +63,7 @@ exports.writeNeidFile = function (neid) {
 exports.readNeidFileIfExists = function() {
 
     appInsightsMetrics().trackEvent({
-        name: "nutrition_data_request_retries", 
+        name: 'nutrition_data_request_retries', 
         properties: { }
      });
 
