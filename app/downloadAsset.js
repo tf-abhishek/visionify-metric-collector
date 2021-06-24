@@ -128,6 +128,12 @@ function initializeListenerToMerchApp() {
 
 function handleAdPlatform(client) {
     logger.info('Requesting Ad-Platform data');
+
+    appInsightsMetrics().trackEvent({
+        name: "ad_platform_campaign_requests", 
+        properties: { }
+     });
+
     actionCounter.inc({
         action_type: 'ad_platform_campaign_requests'
     });
@@ -156,6 +162,12 @@ function handleAdPlatform(client) {
             }, getAdPlatformIntervalInMs);
         }, (err) => {
             logger.error(`Error getting Ad-Platform data: ${err}. Will keep looping.`);
+
+            appInsightsMetrics().trackEvent({
+                name: "ad_platform_campaign_requests_failed", 
+                properties: { }
+             });
+            
             actionCounter.inc({
                 action_type: 'ad_platform_campaign_requests_failed'
             });

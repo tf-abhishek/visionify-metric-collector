@@ -61,6 +61,12 @@ exports.writeNeidFile = function (neid) {
 
 // Throws if neid file does not exist:
 exports.readNeidFileIfExists = function() {
+
+    appInsightsMetrics().trackEvent({
+        name: "nutrition_data_request_retries", 
+        properties: { }
+     });
+
     actionCounter.inc({
         action_type: 'nutrition_data_request_retries'
     }); 

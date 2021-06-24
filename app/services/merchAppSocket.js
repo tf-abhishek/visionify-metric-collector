@@ -44,6 +44,12 @@ exports.initialize = function () {
       logger.info(`Received a 'nutritionData' from merchApp. Will send last nutritionData'`);
       const nutritionDataToSend = _nutritionData || utils.readTextFile(nutritionDataFileFullPath);
       _server.emit(nutritionDataKey, nutritionDataToSend);
+      
+      appInsightsMetrics().trackEvent({
+        name: "nutrition_record_returned", 
+        properties: { }
+     });
+
       actionCounter.inc({
         action_type: 'nutrition_record_returned'
       }); 

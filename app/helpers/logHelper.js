@@ -66,10 +66,22 @@ loggerClient.exceptions.handle(
 const logger = {
     error: (text, isException = false) => {
         if (isException) {
+
+            appInsightsMetrics().trackEvent({
+                name: "error_exception_logs", 
+                properties: { }
+             });
+
             actionCounter.inc({
                 action_type: 'error_exception_logs'
             });
         } else {
+
+            appInsightsMetrics().trackEvent({
+                name: "error_logs", 
+                properties: { }
+             });
+
             actionCounter.inc({
                 action_type: 'error_logs'
             });
@@ -83,6 +95,12 @@ const logger = {
         loggerClient.debug(text);
     },
     warn: (text) => {
+
+        appInsightsMetrics().trackEvent({
+            name: "warning_logs", 
+            properties: { }
+         });
+
         actionCounter.inc({
             action_type: 'warning_logs'
         });

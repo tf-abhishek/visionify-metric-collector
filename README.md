@@ -27,6 +27,11 @@ const actionCounter = metrics().counter({
 
 ...
 
+appInsightsMetrics().trackEvent({
+   name: "playlist_sent", 
+   properties: { }
+});
+
 actionCounter.inc({
     action_type: 'playlist_sent'
 })

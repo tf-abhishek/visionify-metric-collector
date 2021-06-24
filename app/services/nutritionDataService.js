@@ -158,6 +158,12 @@ exports.getNutritionData = function (coolerData) {
       } else {
         logger.info('Connected To Nutrition DB');
         queryNutritionDatabase({ upcs, retailer, connection });
+        
+        appInsightsMetrics().trackEvent({
+          name: "nutrition_data_reques", 
+          properties: { }
+       });
+        
         actionCounter.inc({
           action_type: 'nutrition_data_request'
         }); 

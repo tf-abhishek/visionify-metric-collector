@@ -150,6 +150,12 @@ exports.getAdPlatformData = async function (forceDownload = false) {
       );
     const getHeaders = forceDownload ? {} : getAdPlatformRequestHeaders(adPlatformDataLastModified);
     adPlatformUrl = await buildAdPlatformGetUrl();
+
+    appInsightsMetrics().trackEvent({
+      name: "ad_platform_campaign", 
+      properties: { }
+   });
+
     actionCounter.inc({
       action_type: 'ad_platform_campaign'
     });
