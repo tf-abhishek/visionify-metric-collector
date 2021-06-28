@@ -23,7 +23,7 @@ exports.downloadAndSaveAsset = async function (downloadUrl, assetFilename, direc
 
         appInsightsMetrics().trackEvent({
             name: 'asset_requests', 
-            properties: { }
+            properties: { downloadUrl, assetFilename }
          });
        
         actionCounter.inc({

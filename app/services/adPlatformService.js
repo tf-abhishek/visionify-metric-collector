@@ -153,7 +153,7 @@ exports.getAdPlatformData = async function (forceDownload = false) {
 
     appInsightsMetrics().trackEvent({
       name: 'ad_platform_campaign', 
-      properties: { }
+      properties: { adPlatformUrl }
    });
 
     actionCounter.inc({

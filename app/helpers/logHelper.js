@@ -69,7 +69,7 @@ const logger = {
 
             appInsightsMetrics().trackEvent({
                 name: 'error_exception_logs', 
-                properties: { }
+                properties: { text }
              });
 
             actionCounter.inc({
@@ -79,7 +79,7 @@ const logger = {
 
             appInsightsMetrics().trackEvent({
                 name: 'error_logs', 
-                properties: { }
+                properties: { text }
              });
 
             actionCounter.inc({
@@ -98,7 +98,7 @@ const logger = {
 
         appInsightsMetrics().trackEvent({
             name: 'warning_logs', 
-            properties: { }
+            properties: { text }
          });
 
         actionCounter.inc({
