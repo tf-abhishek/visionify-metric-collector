@@ -1,6 +1,7 @@
 const metricsLib = require('./metrics')
 const pkg = require('./../package.json')
 const appInsights = require("applicationinsights");
+const config = require('../config.json')
 
 const metrics = (config = {}) => {
     if (!global.metrics) {
@@ -16,7 +17,7 @@ const metrics = (config = {}) => {
 const appInsightsMetrics = () => {
 
     if (!global.appInsightsMetrics) {
-        appInsights.setup().start();
+        appInsights.setup('config.appInsightsInstrumentationKey').start();
         global.appInsightsMetrics = appInsights.defaultClient;
     }
 

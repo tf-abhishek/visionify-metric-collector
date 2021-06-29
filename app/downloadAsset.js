@@ -26,7 +26,7 @@ logger.info(`should dso be set? --> ${enableDso}`)
 const _config = require('./config.json')
 const { device, api } = require('./helpers')
 const { app } = api
-const { metrics } = require('./helpers/helpers');
+const { metrics, appInsightsMetrics } = require('./helpers/helpers');
 
 const actionCounter = metrics().counter({
     name: 'action__counter_ad_platform',
@@ -45,7 +45,7 @@ Array.prototype.extend = function (other_array) {
 async function init() {
     await device.getDeviceDetails();
     logger.info('Starting metrics endpoint in GET /metrics');
-    app.listen(_config.api.port);
+    app.listen(config.api.port );
 }
 
 function initializeEdgeHubClient() {
