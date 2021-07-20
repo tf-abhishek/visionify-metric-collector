@@ -1,6 +1,0 @@
-{
-  "api": {
-    "port": 8080
-  },
-  "appInsightsInstrumentationKey":"SAMPLE_INSTRUMENTATION_KEY"
-}
