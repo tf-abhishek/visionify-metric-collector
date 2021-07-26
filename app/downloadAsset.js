@@ -3,7 +3,7 @@ const app = express()
 const client = require('prom-client')
 const collectDefaultMetrics = client.collectDefaultMetrics;
 var os = require("os");
-let deviceId = os.hostname();
+let deviceId = process.env.IOTEDGE_DEVICEID || os.hostname();
 console.log({deviceId})
 collectDefaultMetrics({
     labels: { deviceId: deviceId },
