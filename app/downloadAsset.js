@@ -5,8 +5,9 @@ const collectDefaultMetrics = client.collectDefaultMetrics;
 var os = require("os");
 let deviceId = process.env.IOTEDGE_DEVICEID || os.hostname();
 console.log({ deviceId })
+
 collectDefaultMetrics({
-    labels: { deviceId: deviceId },
+    labels: { edge_device: deviceId },
 });
 
 
@@ -22,7 +23,6 @@ const person_exit = new client.Counter({
     labelNames: ['edge_device', 'customerID'],
 })
 
-
 const room_empty_duration = new client.Counter({
     name: 'room_empty_duration',
     help: 'duration of time someone was in the room.',
@@ -35,9 +35,6 @@ const room_occupied_duration = new client.Counter({
     labelNames: ['edge_device', 'customerID'],
 })
 
-
-let enter_count = 0
-let out_count = 0
 let in_duration_count = 0
 let out_duration_count = 0
 let is_in = 'false'
@@ -48,36 +45,27 @@ setInterval(() => {
     } else {
         out_duration_count++
     }
-    if (Math.random() < 0.412321) {
-        if (!is_in) {
-            enter_count++
-            is_in = true
-        }
-    } else {
-        if (is_in) {
-            out_count++
-            is_in = false
-        }
-
-    }
 }, 1000)
+
+setInterval(() => {
+    if (Math.random() < 0.1291) {
+        is_in = !is_in
+    }
+}, 60 * 1000)
 
 
 setInterval(() => {
-    person_enter.inc({
-        edge_device: deviceId,
-        customerID: 'Default'
-    }, enter_count)
-
-
-    person_exit.inc({
-        edge_device: deviceId,
-        customerID: 'Default'
-    }, out_count)
-
-    enter_count = 0
-    out_count = 0
-
+    if (is_in) {
+        person_enter.inc({
+            edge_device: deviceId,
+            customerID: 'Default'
+        })
+    } else {
+        person_exit.inc({
+            edge_device: deviceId,
+            customerID: 'Default'
+        })
+    }
 }, 60 * 1000) //every minute
 
 
@@ -91,6 +79,7 @@ setInterval(() => {
         edge_device: deviceId,
         customerID: 'Default'
     }, out_duration_count)
+    
     in_duration_count = 0
     out_duration_count = 0
 
