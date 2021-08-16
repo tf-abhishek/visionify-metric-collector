@@ -10,7 +10,6 @@ collectDefaultMetrics({
     labels: { edge_device: deviceId },
 });
 
-
 const person_enter = new client.Counter({
     name: 'person_enter',
     help: 'Number of time someone enters the room.',
@@ -37,6 +36,7 @@ const room_occupied_duration = new client.Counter({
 
 let in_duration_count = 0
 let out_duration_count = 0
+let was_in = false
 let is_in = 'false'
 
 setInterval(() => {
@@ -48,26 +48,26 @@ setInterval(() => {
 }, 1000)
 
 setInterval(() => {
-    if (Math.random() < 0.1291) {
+    was_in = is_in
+
+    if (Math.random() < 0.2291) {
         is_in = !is_in
     }
-}, 60 * 1000)
 
-
-setInterval(() => {
     if (is_in) {
-        person_enter.inc({
-            edge_device: deviceId,
-            customerID: 'Default'
-        })
+        if (was_in != is_in)
+            person_enter.inc({
+                edge_device: deviceId,
+                customerID: 'Default'
+            })
     } else {
-        person_exit.inc({
-            edge_device: deviceId,
-            customerID: 'Default'
-        })
+        if (was_in != is_in)
+            person_exit.inc({
+                edge_device: deviceId,
+                customerID: 'Default'
+            })
     }
-}, 60 * 1000) //every minute
-
+}, 60 * 1000)
 
 setInterval(() => {
     room_empty_duration.inc({
@@ -79,7 +79,7 @@ setInterval(() => {
         edge_device: deviceId,
         customerID: 'Default'
     }, out_duration_count)
-    
+
     in_duration_count = 0
     out_duration_count = 0
 
