@@ -4,11 +4,11 @@ var ModuleClient = require('azure-iot-device').ModuleClient;
 
 process.env.METRIC_URLS = process.env.METRIC_URLS || 'http://edgeHub:9600/metrics, http://edgeAgent:9600/metrics, http://vfyInference:8001/metrics'
 
-ModuleClient.fromEnvironment(Transport, function (err, client) {
+ModuleClient.fromEnvironment(Transport, async function (err, client) {
   if (err) {
     console.log('error:' + err);
   } else {
-    client.open(function (err) {
+    client.open(async function (err) {
       if (err) {
         console.error('could not open IotHub client', err);
       } else {
