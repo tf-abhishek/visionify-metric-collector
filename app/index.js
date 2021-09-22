@@ -21,7 +21,7 @@ ModuleClient.fromEnvironment(Transport, async function (err, client) {
           let metricResults = await Promise.all(modules.map(m => scrapeMetric(m)))
           let result = metricResults.join('\n\n')
           // response.body = result
-          response.send(200, result)
+          return response.send(200, result, (a, b) => { console.log(a, b) })
           return
         });
       }
@@ -36,7 +36,7 @@ async function scrapeMetric(url) {
     url: url,
   };
 
-  axios(config)
+  return axios(config)
     .then(function (response) {
       // console.log(JSON.stringify(response.data));
       console.log('RESPONSE DATA :: ' + `Module :: ${url}`, response.data, '\n\n\n')
@@ -48,5 +48,4 @@ async function scrapeMetric(url) {
     });
 }
 
-
-scrapeMetric('https://www.google.com')
+// scrapeMetric('https://www.google.com')
