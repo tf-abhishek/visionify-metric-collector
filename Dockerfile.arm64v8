@@ -8,4 +8,4 @@ COPY * */
 RUN npm install --production
 COPY . ./
 
-CMD ["node", "downloadAsset.js"]
+CMD ["node", "index.js"]

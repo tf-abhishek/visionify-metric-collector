@@ -1,10 +1,10 @@
 {
-    "$schema-version": "1.0.2",
+    "$schema-version": "1.0.0",
     "description": "",
     "image": {
-        "repository": "visionifyiot.azurecr.io/metric-demo",
+        "repository": "visionifyiot.azurecr.io/visionify-metric-collector",
         "tag": {
-            "version": "1.0.2",
+            "version": "1.0.0",
             "platforms": {
                 "amd64": "./Dockerfile",
                 "arm64v8": "./Dockerfile.arm64v8"
