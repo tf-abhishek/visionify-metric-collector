@@ -33,7 +33,7 @@ ModuleClient.fromEnvironment(Transport, async function (err, client) {
 async function scrapeMetric(url) {
   var config = {
     method: 'get',
-    url: 'url',
+    url: url,
   };
 
   axios(config)
@@ -47,3 +47,6 @@ async function scrapeMetric(url) {
       return ''
     });
 }
+
+
+scrapeMetric('https://www.google.com')
