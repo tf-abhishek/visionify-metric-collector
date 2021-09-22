@@ -20,7 +20,8 @@ ModuleClient.fromEnvironment(Transport, function (err, client) {
           modules = modules.split(',')
           let metricResults = await Promise.all(modules.map(m => scrapeMetric(m)))
           let result = metricResults.join('\n\n')
-          response.body = result
+          // response.body = result
+          response.send(200, result)
           return
         });
       }
