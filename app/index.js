@@ -13,7 +13,7 @@ ModuleClient.fromEnvironment(Transport, function (err, client) {
         console.error('could not open IotHub client', err);
       } else {
         console.log('The client has successfully been opened. Now waitiing for direct method to be called')
-        client.onMethod('getMetric', function (request, response) {
+        client.onMethod('getMetric', async function (request, response) {
           // readMessage(client, request, response);
           console.log(request, response)
           let modules = process.env.METRIC_URLS || ''
