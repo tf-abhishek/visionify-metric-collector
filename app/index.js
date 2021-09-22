@@ -1,4 +1,4 @@
-const axios = requrie('axios')
+const axios = require('axios')
 const Transport = require('azure-iot-device-mqtt').Mqtt;
 var ModuleClient = require('azure-iot-device').ModuleClient;
 
