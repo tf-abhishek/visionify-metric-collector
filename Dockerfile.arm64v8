@@ -5,6 +5,7 @@ ADD app /app
 WORKDIR /app/
 
 COPY * */
+RUN apk --no-cache add curl
 RUN npm install --production
 COPY . ./
 
