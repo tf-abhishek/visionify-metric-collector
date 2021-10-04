@@ -16,6 +16,7 @@
     "azure-iot-device": "^1.17.6",
     "azure-iot-device-mqtt": "^1.15.6",
     "express": "^4.17.1",
+    "parse-prometheus-text-format": "^1.1.1",
     "prom-client": "^13.1.0"
   }
 }
